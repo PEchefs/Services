@@ -57,18 +57,20 @@ RX -  TX
 
 #define ON 1
 #define OFF 0
+#define DEBUG 0
+#define DEBUG1  1
 
 #define EXIT_SUCCESS 1
 #define EXIT_FAILURE 0
 
 // ERROR HANDLER CODES:
-#define senseError 101
-#define ActuationError 102
-#define invalidCommand 103
-#define invalidType 104
-#define IDforTypeNotFound 105
+#define senseError 101         //0x65
+#define ActuationError 102     //0x66
+#define invalidCommand 103     //0x67
+#define invalidType 104        //0x68
+#define IDforTypeNotFound 105  //0x69
 
-// RESPONSE SUCCESS
+// RESPONSE CODES
 #define RESPOND_SUCCESS 201
 #define RESPOND_FAILURE 202
 
@@ -103,8 +105,8 @@ boolean readCommand=0;                                      // Flag to indicate 
 boolean actuateCommand=0;                                   // Flag to indicate if received command was a ACTUATE device command
 boolean commandComplete = false;                            // Flag to indicate if serial data received is COMPLETE or not - '\n' is the termination character
 
-enum sensors_t {ball,depth,flow,unknownS};
-enum actuators_t {relay,unknownA};
+enum sensors_t {ball=151,depth=152,flow=153,unknownS};
+enum actuators_t {relay=161,unknownA};
 
 typedef struct
 {
@@ -128,7 +130,7 @@ union
 {
   struct
   {
-    int    receivedCommand;
+    unsigned int    receivedCommand;
     byte   receivedID;
     byte   receivedType;
     byte   receivedValue;
@@ -196,6 +198,8 @@ void setMuxSlaveSelectLines(byte _slaveSelectID)
 
 void setPinConfig()
 {
+  if(DEBUG)
+    Serial.println("Set pin config");
   // MUX pins
   for (int i=0;i<NumOfMux;i++)
     pinMode(MuxEnablePin[i],OUTPUT);
@@ -210,7 +214,8 @@ void setPinConfig()
 
 void initializeActuators()
 {
-  
+  if(DEBUG)
+    Serial.println("Initialize Actuators");
 }
 
 void initializeSensors()
@@ -222,15 +227,28 @@ void initializeSensors()
 
 boolean isCommandValid()
 {
+    if(DEBUG)
+      {
+        Serial.print("RecevivedDataUnion.ReceivedSerialCommand = ");
+        for(unsigned short int i=0;i<10;i++)
+          Serial.println(receivedDataUnion.receivedSerialCommand[i]);
+        Serial.print("Received command = ");
+        Serial.println(receivedDataUnion.receiveBufferStruct.receivedCommand);
+      }
   switch(receivedDataUnion.receiveBufferStruct.receivedCommand)
   {
-    case 0xEAAD:// Command to READ sensor data
+
+    case 0xADEA:// Command to READ sensor data: EAAD but unsigned int stores lower byte in higher index and higher byte in lower index and hence reversed
                 switch(receivedDataUnion.receiveBufferStruct.receivedType)
                   {
                     case depth:// Identify depth sensor structure that contains ID received
+                                if(DEBUG)
+                                  Serial.println("Type: Depth");
                                 for (int i=0;i<NumOfDepthSensors;i++)
                                 {
-                                  if (g_DepthSensor_st[NumOfDepthSensors].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
+                                  if(DEBUG)
+                                    { Serial.print("Searching sensor index = ");Serial.println(i);Serial.print("SensorID = ");Serial.println(g_DepthSensor_st[i].sensorID);}
+                                  if (g_DepthSensor_st[i].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
                                   {
                                     sensorIndexNow=i;
                                       //TODO: Check the above statement's validity/working. Or else simply save index and use type again in sense or actuate function 
@@ -241,9 +259,13 @@ boolean isCommandValid()
                                 errorHandler(IDforTypeNotFound);
                                 return(EXIT_FAILURE);
                     case flow:// Identify flow sensor structure that contains ID received
+                                if(DEBUG)
+                                  Serial.println("Type: Flow");
                                 for (int i=0;i<NumOfFlowSensors;i++)
                                 {
-                                  if (g_FlowSensor_st[NumOfFlowSensors].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
+                                  if(DEBUG)
+                                    { Serial.print("Searching sensor index = ");Serial.println(i);Serial.print("SensorID = ");Serial.println(g_FlowSensor_st[i].sensorID);}
+                                  if (g_FlowSensor_st[i].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
                                   {
                                     sensorIndexNow=i;
                                       //TODO: Check the above statement's validity/working. Or else simply save index and use type again in sense or actuate function 
@@ -255,9 +277,13 @@ boolean isCommandValid()
                                 return(EXIT_FAILURE);                               
 
                     case ball:// Identify ball sensor structure that contains ID received
+                                if(DEBUG)
+                                  Serial.println("Type: Ball");
                                 for (int i=0;i<NumOfBallSensors;i++)
                                 {
-                                  if (g_TankBallSensor_st[NumOfBallSensors].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
+                                  if(DEBUG)
+                                    { Serial.print("Searching sensor index = ");Serial.println(i);Serial.print("SensorID = ");Serial.println(g_TankBallSensor_st[i].sensorID);}
+                                  if (g_TankBallSensor_st[i].sensorID == receivedDataUnion.receiveBufferStruct.receivedID)
                                   {
                                     sensorIndexNow=i;
                                       //TODO: Check the above statement's validity/working. Or else simply save index and use type again in sense or actuate function 
@@ -270,7 +296,7 @@ boolean isCommandValid()
                     default: errorHandler(invalidType);
                              return(EXIT_FAILURE);
                   }
-    case 0xACAE:// Command to ACTUATE a device
+    case 0xAEAC:// Command to ACTUATE a device: ACAE but unsigned int stores lower byte in higher index and higher byte in lower index and hence reversed
                 switch(receivedDataUnion.receiveBufferStruct.receivedType)
                   {
                     case relay:// Identify relay structure that contains ID received
@@ -310,29 +336,43 @@ boolean actuate(byte _actuatorIndex, unsigned short int _actuatorType,byte _valu
 
 boolean sense(byte _sensorIndex, int _sensorType)
 {
+  if(DEBUG)
+    Serial.println("Function call to sense sensor value");
    switch(_sensorType)
   {
     //TODO : check failures in sensor read operations
-    case depth:g_DepthSensor_st[_sensorIndex].sensorValue=depthofWater(g_DepthSensor_st[_sensorIndex].muxID-1,g_DepthSensor_st[_sensorIndex].muxPosition);
+    case depth:
+               if(DEBUG)
+                 Serial.println("Sense function: case type: depth");
+               g_DepthSensor_st[_sensorIndex].sensorValue=depthofWater(g_DepthSensor_st[_sensorIndex].muxID-1,g_DepthSensor_st[_sensorIndex].muxPosition);
                responseToPi_u.responseToPi_st.resultOfOperation=RESPOND_SUCCESS;
                responseToPi_u.responseToPi_st.value=g_DepthSensor_st[_sensorIndex].sensorValue;
-               break;
-    case flow:g_FlowSensor_st[_sensorIndex].sensorValue=RateofWaterFlow(g_FlowSensor_st[_sensorIndex].muxID-1,g_FlowSensor_st[_sensorIndex].muxPosition);
+               return(EXIT_SUCCESS);
+    case flow:if(DEBUG)
+                 Serial.println("Sense function: case type: flow");
+              
+              g_FlowSensor_st[_sensorIndex].sensorValue=RateofWaterFlow(g_FlowSensor_st[_sensorIndex].muxID-1,g_FlowSensor_st[_sensorIndex].muxPosition);
+              
               responseToPi_u.responseToPi_st.resultOfOperation=RESPOND_SUCCESS;
               responseToPi_u.responseToPi_st.value=g_FlowSensor_st[_sensorIndex].sensorValue;
-              break;
-    case ball:g_TankBallSensor_st[_sensorIndex].sensorValue=isTankBallPositionClosed(g_TankBallSensor_st[_sensorIndex].muxID-1,g_TankBallSensor_st[_sensorIndex].muxPosition);
+              if(DEBUG)
+                Serial.println("Sense complete!");
+              return(EXIT_SUCCESS);
+    case ball:if(DEBUG)
+                 Serial.println("Sense function: case type: ball");
+              g_TankBallSensor_st[_sensorIndex].sensorValue=isTankBallPositionClosed(g_TankBallSensor_st[_sensorIndex].muxID-1,g_TankBallSensor_st[_sensorIndex].muxPosition);
               responseToPi_u.responseToPi_st.resultOfOperation=RESPOND_SUCCESS;
               responseToPi_u.responseToPi_st.value=g_TankBallSensor_st[_sensorIndex].sensorValue;
-              break;
+              return(EXIT_SUCCESS);
     default:errorHandler(invalidType);
             return(EXIT_FAILURE);
-    break;
   }
 }
 
 void errorHandler(unsigned short int errorCode)
 {
+  if(DEBUG)
+    {Serial.print("Error handler called with errorCode: ");Serial.println(errorCode);}
   responseToPi_u.responseToPi_st.resultOfOperation=RESPOND_FAILURE;
   responseToPi_u.responseToPi_st.value=errorCode;
 }
@@ -372,12 +412,15 @@ boolean isTankBallPositionClosed(byte _muxID, byte _muxPosition)
 
 int RateofWaterFlow(byte _muxID, byte _muxPosition)
 {
+ if(DEBUG)
+   Serial.println("Function call: Rate of Water flow");
  int litresPerHour=0; 
  muxEnable(_muxID);
  setMuxSlaveSelectLines(_muxPosition);
- sei();  // set Interrupt Enable
+ attachInterrupt(0, flowSensorCount, FALLING);
  delay(1000);
- cli();  // clear Interrupt Enable
+ detachInterrupt(0);
+// TODO: Calibration required
  litresPerHour=flowSensorCountPulses*60/7.5;
  muxDisable(_muxID);
  return litresPerHour;
@@ -388,7 +431,11 @@ unsigned int depthofWater(byte _muxID, byte _muxPosition)
  unsigned int roundTripEchoTimeInUs=0,depthInCM=0;
  muxEnable(_muxID);
  setMuxSlaveSelectLines(_muxPosition);
- roundTripEchoTimeInUs=depthSensor.ping_median(5);
+ if(DEBUG)
+   Serial.println("Function : depthofWater - before ping");
+ roundTripEchoTimeInUs=depthSensor.ping();
+ if(DEBUG)
+   Serial.println("Function : depthofWater - ping complete");
  depthInCM=depthSensor.convert_cm(roundTripEchoTimeInUs);
  muxDisable(_muxID);
  return depthInCM;
@@ -396,7 +443,9 @@ unsigned int depthofWater(byte _muxID, byte _muxPosition)
 
 void sendDataToPi(byte _responseToPi[])
 {
- for(unsigned short i=0;i<sizeof(_responseToPi);i++)
+ if(DEBUG)
+  Serial.println("Sending Result to Server"); 
+ for(unsigned short i=0;i<3;i++)
    Serial.write(_responseToPi[i]);
    
 }
@@ -420,32 +469,59 @@ void clearAll()
 
 void setup()
 {
-  Serial.begin(115000);
+  Serial.begin(115200);
+  delay(200);
+  if(DEBUG)
+    {
+      Serial.println("ON");
+      Serial.println("Water Sensor and Control Unit");
+      Serial.println("Line 2 : Water SCU");
+      Serial.println("Line 3 : Water SCU");
+      Serial.println("Line 4 : Water SCU");
+      Serial.println("Line 5 : Water SCU");
+    }
   setPinConfig();
   initializeActuators();
   initializeSensors();
   // Initialize shift register - sets pin configurations/mapping and clear shiftregister
   shiftReg1.srinit(ShiftRegPinSER,ShiftRegPinRCK,ShiftRegPinSRCK,ShiftRegPinSRCLR);
-  // Interrupt to detect pulses from flow sensor
-  attachInterrupt(2, flowSensorCount, RISING);
-  cli();
 }
 
 void loop()
 {
   if(commandComplete == true)
-    if (isCommandValid())
+    {
+      if(DEBUG)
+        Serial.println("Command complete=true");
+      if (isCommandValid())
       {
+        if(DEBUG)
+          Serial.println("Command Valid!");
         if(readCommand)
-          if(!sense(sensorIndexNow,receivedDataUnion.receiveBufferStruct.receivedType))
-            errorHandler(senseError);
-          
+          {
+            if(DEBUG)
+              Serial.println("Read Command construct");
+            if(!sense(sensorIndexNow,receivedDataUnion.receiveBufferStruct.receivedType))
+              errorHandler(senseError);
+            else
+              if(DEBUG)
+                Serial.println("Read sensor value complete!");  
+          }
         if(actuateCommand)
-          if(!actuate(actuatorIndexNow,receivedDataUnion.receiveBufferStruct.receivedType,receivedDataUnion.receiveBufferStruct.receivedValue))
-            errorHandler(ActuationError);
+          {
+            if(DEBUG)
+              Serial.println("Read Command construct"); 
+            if(!actuate(actuatorIndexNow,receivedDataUnion.receiveBufferStruct.receivedType,receivedDataUnion.receiveBufferStruct.receivedValue))
+              errorHandler(ActuationError);
+            else
+              if(DEBUG)
+                Serial.println("Actuate device complete!");  
+          }
       }
+     if(DEBUG)
+       Serial.println("Next Step: Communicate result to server");
      sendDataToPi(responseToPi_u.responseMessage);
-              
+    }        
   clearAll();
 }
 
@@ -460,6 +536,12 @@ void serialEvent() {
     } 
     else
     {
+      delay(10);
+      if(DEBUG)
+      {
+        Serial.print("inChar = ");
+        Serial.println(inChar);
+      }      
       receivedDataUnion.receivedSerialCommand[i]= inChar;
       i++;
     }
