@@ -4,6 +4,20 @@
 #include "gLCD_u8glib.h"
 #include "Keypad.h"
 
+
+const byte rows = 4; //four rows
+const byte cols = 4; //three columns
+char keys[rows][cols] = {
+  {'1','2','3','E'},
+  {'4','5','6','M'},
+  {'7','8','9','U'},
+  {'P','0','O','D'}
+};
+byte rowPins[rows] = {A0, A1, A2, A3}; //connect to the row pinouts of the keypad
+byte colPins[cols] = {A4, A5, A6, A7}; //connect to the column pinouts of the keypad
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
+
+
 /*
 enum state {HOMESCREEN,MENUSCREEN,FPAUTH,PWDAUTH,RFIDAUTH,MENUFUNCTION,NONE};
 enum key {POWER,SCROLLDOWN,SCROLLUP,ENTER,ESC,MENU,ZERO,ONE,TWO,THREE,FOUR,FIVE,SIX,SEVEN,EIGHT,NINE,NOKEY};
