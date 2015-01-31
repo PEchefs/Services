@@ -32,12 +32,13 @@ const int outlet=10;
 
 int shiftRegData=0;
 
-const int led_pump = A4, led_ht = A3, led_type = A2, led_quant = A1, led_err = A0, led_gsm=A5;  //different LEDs for different actions
+const int led_pump = 13, led_ht = 7, led_type = 8, led_quant = 9, led_err = 5, led_gsm=6;  //different LEDs for different actions
 int height, type, quantity;
 int total_quantity=0;
 
-#define DEBUG 1
-#define DEBUG1 1
+#define DEBUG 0
+#define DEBUG1 0
+#define DEBUG2 1
 
 shiftReg16 shiftReg1;
 const int ShiftRegPinSRCLR = A0;
@@ -52,6 +53,7 @@ unsigned long time1, time2, time3, time4, time_diff;
 IRrecv irrecv(IR_recv);   //receive IR information from the pin IR_recv
 
 const char phone_no[]="9008178070";   //phone number to which the SMS has to be sent
+//const char phone_no[]="9972811280";   //phone number to which the SMS has to be sent
 
 decode_results results;    //decode the IR info and store it in results
 
@@ -77,11 +79,11 @@ boolean valveControl(byte _valveIndex, boolean OnorOFF)
     bitWrite(highByte(shiftRegData),_valveIndex,OnorOFF);
   }
   */
-  if(DEBUG1)
-    Serial.println("Sending Data to shiftReg16");
+//  if(DEBUG1)
+//    Serial.println("Sending Data to shiftReg16");
   sendDataToShiftReg(shiftRegData);
-  if(DEBUG1)
-    Serial.println("Sent Data to shiftReg16");
+//  if(DEBUG1)
+//    Serial.println("Sent Data to shiftReg16");
   
   return 1;
 }
@@ -851,12 +853,24 @@ void loop()     //this function is called indefinitely
     if(DEBUG1)
       Serial.println("Checking GSM");
     time_flag=0;
-    for(i=0;i<2;i++)  //ping GSM modem 2 times
+    if(!DEBUG)
+    {
+      for(i=0;i<2;i++)  //ping GSM modem 2 times
     {
       gsm_flag=gsm_ping();    //call the function for pinging the GSM modem
+      if(DEBUG)
+      {
+        gsm_flag=1;
+        Serial.println("DEBUG IS ON");
+      }
       if(gsm_flag==1)        //if ping is successful,
         break;               //come out of for loop
       delay(500);            //else ttry again
+    }
+    }
+    else
+    {
+      gsm_flag=1;
     }
   }
   
@@ -970,7 +984,7 @@ void loop()     //this function is called indefinitely
  else      //if GSM if not working,
   {
     func_power_off();    //power OFF the system
-  //  analogWrite(led_gsm,255);    //notify the user about the GSM error by switching ON a LED
+    analogWrite(led_gsm,255);    //notify the user about the GSM error by switching ON a LED
     delay(200);
   }
 }

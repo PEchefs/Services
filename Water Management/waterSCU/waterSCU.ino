@@ -302,7 +302,7 @@ boolean isCommandValid()
                     case relay:// Identify relay structure that contains ID received
                                  for (int i=0;i<NumOfRelays;i++)
                                   {
-                                    if (g_Relay_st[NumOfRelays].actuatorID == receivedDataUnion.receiveBufferStruct.receivedID)
+                                    if (g_Relay_st[i].actuatorID == receivedDataUnion.receiveBufferStruct.receivedID)
                                     {
                                       actuatorIndexNow=i;
                                       //TODO: Check the above statement's validity/working. Or else simply save index and use type again in sense or actuate function 
@@ -328,6 +328,9 @@ boolean actuate(byte _actuatorIndex, unsigned short int _actuatorType,byte _valu
   {
     //TODO : check failures in sensor read operations
     case relay: motorControl(_actuatorIndex,_valueToSet);
+                responseToPi_u.responseToPi_st.resultOfOperation=RESPOND_SUCCESS;
+                responseToPi_u.responseToPi_st.value=g_Relay_st[_actuatorIndex].actuatorValue;
+                return(EXIT_SUCCESS);
     default:errorHandler(invalidType);
             return(EXIT_FAILURE);
     break;
