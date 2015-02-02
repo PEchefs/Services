@@ -60,6 +60,6 @@ unsigned short MenuFunctionToCallIndex=0;
 enum state {HOMESCREEN,MENUSCREEN,FPAUTH,PWDAUTH,RFIDAUTH,MENUFUNCTION,NONE};
 enum key {POWER,SCROLLDOWN,SCROLLUP,ENTER,ESC,MENU,ZERO,ONE,TWO,THREE,FOUR,FIVE,SIX,SEVEN,EIGHT,NINE,NOKEY};
 state previousState=NONE;
-state currentState=MENUSCREEN;
+state currentState=HOMESCREEN;
 state newState=NONE;
 
