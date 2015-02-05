@@ -6,7 +6,7 @@
 #include <Wire.h>
 #include <stdlib.h>
 #define DEBUG 1
-
+#define DEBUGWOWIRE 0
 
 extern unsigned short currentMenu;
 extern state previousState;
@@ -204,8 +204,8 @@ void serialEvent() {
           keypressed=MENU;
         else if (inchar=='p')
           keypressed=POWER;
-        if(DEBUG)
-          Serial.println("Key press serial event function exit");
+     //   if(DEBUG)
+     //     Serial.println("Key press serial event function exit");
      }
   //}
  /* else
