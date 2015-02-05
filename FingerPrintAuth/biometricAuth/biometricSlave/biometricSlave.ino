@@ -39,18 +39,59 @@ union
   }g_RecByte_split;
   byte g_RecByte_byt[16];  
 }g_ReceivedByte_un;
-
+byte response[16]={0x40,0,0};
+int flag=0;
+int req_flag=0;
 void setup()
 {
   Wire.begin(LOCALADDRESS);                // join i2c bus with address #4
-  //Wire.onReceive(receiveFromMaster); // register event
+  
+  Wire.onRequest(requestEvent); // register event
+  Wire.onReceive(receiveEvent); // register event
   Serial.begin(115200);   // start serial for output
+  fingerprint_init();
+  Serial.println(fingerprint_check(),DEC);
 }
 
 void loop()
 {
-  delay(100);
-  if(Wire.available()==16)
+  delay(1000);
+  Serial.println("Waiting for Omar");  
+  switch(flag)
+  {
+    case 1:if(fingerprint_check())
+                      response[1]=0x40;
+                    else
+                      response[1]=0x41;  flag=0;break;
+    case 2:if(getFingerprintEnroll1())
+                       response[1]=0x40;
+                    else
+                      response[1]=0x41;  flag=0;break;
+    case 3:if(getFingerprintEnroll2())
+                      response[1]=0x40;
+                    else
+                      response[1]=0x41;  flag=0;break;
+    case 4:if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
+                      response[1]=0x40;
+                    else
+                      response[1]=0x43;  flag=0;break;
+    case 5:if(deleteFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
+                      response[1]=0x40;
+                    else
+                      response[1]=0x43;break;
+    case 6:response[1]=0x44;
+           response[2]=getFingerprintIDez();  flag=0;break;
+    default:break;
+  }
+  if(req_flag==1)
+  {
+    Serial.println("response sent");
+    Wire.write(response,16);req_flag=0;   
+  }
+}
+void receiveEvent(int howMany)
+{
+  if(Wire.available()==16) // loop through all but the last
   {
     for(int i=0;i<16;i++)
       g_ReceivedByte_un.g_RecByte_byt[i]=Wire.read();
@@ -58,14 +99,25 @@ void loop()
     Serial.print("cmd");Serial.println(g_ReceivedByte_un.g_RecByte_split.cmd);
     switch(g_ReceivedByte_un.g_RecByte_split.cmd)
     {
-      case 0x3130:  Wire.write(fingerprint_init());break;
-      case 0x3230:  Wire.write(getFingerprintEnroll1());break;
-      case 0x3330:  Wire.write(getFingerprintEnroll2());break;
-      case 0x3430:  Wire.write(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]));break;
+      case 0x3130:  flag=1;
+                      break;
+      case 0x3230:  flag=2;
+                     break;
+      case 0x3330:  flag=3;
+                    break;
+      case 0x3430:  flag=4;
+                    break;
+      case 0x3530:  flag=5;
+                    break;
+      case 0x3536:  flag=6;break;
       default:break;
     }
-    
-  }
+  }  
+}
+
+void requestEvent()
+{
+  req_flag=1;
 }
 
 // function that executes whenever data is received from master
