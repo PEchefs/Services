@@ -39,7 +39,7 @@ union
   }g_RecByte_split;
   byte g_RecByte_byt[16];  
 }g_ReceivedByte_un;
-byte response[16]={0x40,0,0};
+byte response[16]={0,0,0x40,0x46,0};
 int flag=0;
 int req_flag=0;
 void setup()
@@ -60,33 +60,34 @@ void loop()
   switch(flag)
   {
     case 1:if(fingerprint_check())
-                      response[1]=0x40;
+                      response[3]=0x40;
                     else
-                      response[1]=0x41;  flag=0;break;
+                      response[3]=0x41;  flag=0;break;
     case 2:if(getFingerprintEnroll1())
-                       response[1]=0x40;
+                       response[3]=0x40;
                     else
-                      response[1]=0x41;  flag=0;break;
+                      response[3]=0x41;  flag=0;break;
     case 3:if(getFingerprintEnroll2())
-                      response[1]=0x40;
+                      response[3]=0x40;
                     else
-                      response[1]=0x41;  flag=0;break;
+                      response[3]=0x41;  flag=0;break;
     case 4:if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
-                      response[1]=0x40;
+                      response[3]=0x40;
                     else
-                      response[1]=0x43;  flag=0;break;
+                      response[3]=0x43;  flag=0;break;
     case 5:if(deleteFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
-                      response[1]=0x40;
+                      response[3]=0x40;
                     else
-                      response[1]=0x43;break;
-    case 6:response[1]=0x44;
-           response[2]=getFingerprintIDez();  flag=0;break;
+                      response[3]=0x43;break;
+    case 6:response[3]=0x44;
+           response[4]=getFingerprintIDez();  flag=0;break;
     default:break;
   }
   if(req_flag==1)
   {
     Serial.println("response sent");
-    Wire.write(response,16);req_flag=0;   
+    
+    req_flag=0;   
   }
 }
 void receiveEvent(int howMany)
@@ -97,6 +98,8 @@ void receiveEvent(int howMany)
       g_ReceivedByte_un.g_RecByte_byt[i]=Wire.read();
     Serial.print("header");Serial.println(g_ReceivedByte_un.g_RecByte_split.header);
     Serial.print("cmd");Serial.println(g_ReceivedByte_un.g_RecByte_split.cmd);
+    response[2]=0x40;
+    response[3]=0x46;
     switch(g_ReceivedByte_un.g_RecByte_split.cmd)
     {
       case 0x3130:  flag=1;
@@ -112,11 +115,14 @@ void receiveEvent(int howMany)
       case 0x3536:  flag=6;break;
       default:break;
     }
+      req_flag=1;
   }  
 }
 
 void requestEvent()
 {
+  Serial.println("Received Request");
+  Wire.write(response,16);
   req_flag=1;
 }
 
