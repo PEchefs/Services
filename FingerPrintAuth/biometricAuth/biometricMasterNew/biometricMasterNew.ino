@@ -1,5 +1,6 @@
 
 #include <functions.h>
+#include <Ext_EEPROM.h>
 #include <Menu.h>
 #include <gLCD_u8glib.h>
 #include <U8glib.h>
@@ -12,7 +13,7 @@ extern unsigned short currentMenu;
 extern state previousState;
 extern state currentState;
 extern state newState;
-extern menu_st Menu[7];
+extern menu_un Menu;
 extern unsigned short MenuFunctionToCallIndex;
 extern unsigned int serialInputNumber;
 
@@ -42,10 +43,11 @@ void setup() {
   digitalWrite(17,HIGH);
   if(!DEBUGWOWIRE)
   {
-    Wire.begin();
+   i2c_eeprom_init();
   }
   Serial.println("End of setup");
-  initializeMenus();
+  //initializeMenus();
+  getMenu(0);
 }
 
 
@@ -69,14 +71,16 @@ void loop()
                                         break;
                         case SCROLLDOWN:scrolldown();
                                         break;
-                        case ENTER:     enterMenuItem(Menu[currentMenu]);
+                        case ENTER:     getMenu(currentMenu);
+                                        enterMenuItem(Menu.menu_struct);
                                         break;
                         case ESC:       escMenuList();
                                         break;
                       }
                       if(DEBUG)
                         Serial.println("Calling Display Menu Function");
-                     displayMenu(Menu[currentMenu]);
+                     getMenu(currentMenu);
+                     displayMenu(Menu.menu_struct);
                      // displayMenu();
                     }
                     break;
