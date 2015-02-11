@@ -8,17 +8,12 @@
 extern menu_un Menu;
 void setup() {
 i2c_eeprom_init();
+delay(1000);
 Serial.begin(9600);
 Serial.println("Ready to upload Menu");
+Serial.println("uploading Menu 0");
 
-}
-void string_to_array(char* array,char* str)
-{
-  for(int i=0;i<sizeof(str);i++)
-    array[i]=str[i];
-}
-void loop() {
-  Menu.menu_struct.numOfMenuListItems=4;
+Menu.menu_struct.numOfMenuListItems=4;
   string_to_array(Menu.menu_struct.heading,"MENU");
   string_to_array(Menu.menu_struct.List[0],"1.  Enroll");
   string_to_array(Menu.menu_struct.List[1],"2.  Delete");
@@ -31,8 +26,13 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[0]=255;
   Menu.menu_struct.functionPointerIndex[1]=0;
   Menu.menu_struct.functionPointerIndex[2]=1;
-  Menu.menu_struct.functionPointerIndex[3]=255;                               
-  setMenu(0);                  
+  Menu.menu_struct.functionPointerIndex[3]=255; 
+  for(int i=0;i<MENU_DATA_LENGTH;i++)
+      Serial.print(Menu.data[i]);    
+  if(setMenu(0)==1)
+    Serial.println("Succesfully uploaded Menu 0");  
+  Serial.println("uploading Menu 1");
+  
   Menu.menu_struct.numOfMenuListItems=2;
   string_to_array(Menu.menu_struct.heading,"ENROLL");
   string_to_array(Menu.menu_struct.List[0],"1.   Enroll User");
@@ -41,7 +41,9 @@ void loop() {
   Menu.menu_struct.nextLevelMenuIndex[1]=4;
   Menu.menu_struct.functionPointerIndex[0]=255;
   Menu.menu_struct.functionPointerIndex[1]=255;
-  setMenu(1);
+  if(setMenu(1)==1)
+    Serial.println("Succesfully uploaded Menu 1");  
+Serial.println("uploading Menu 2");
 
   Menu.menu_struct.numOfMenuListItems=4;
   string_to_array(Menu.menu_struct.heading,"SETTINGS");
@@ -57,7 +59,9 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[1]=255;                               
   Menu.menu_struct.functionPointerIndex[2]=8;  
   Menu.menu_struct.functionPointerIndex[3]=9;  
-  setMenu(2);
+  if(setMenu(2)==1)
+    Serial.println("Succesfully uploaded Menu 2");  
+Serial.println("uploading Menu 3");
 
   Menu.menu_struct.numOfMenuListItems=3;
   string_to_array(Menu.menu_struct.heading,"ENROLL USER");
@@ -70,7 +74,9 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[0]=2;
   Menu.menu_struct.functionPointerIndex[1]=3;
   Menu.menu_struct.functionPointerIndex[2]=4; 
-  setMenu(3);
+ if(setMenu(3)==1)
+    Serial.println("Succesfully uploaded Menu 3");  
+Serial.println("uploading Menu 4");
 
   Menu.menu_struct.numOfMenuListItems=3;
   string_to_array(Menu.menu_struct.heading,"ENROLL ADMIN");
@@ -83,7 +89,9 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[0]=5;
   Menu.menu_struct.functionPointerIndex[1]=6;
   Menu.menu_struct.functionPointerIndex[2]=7; 
-  setMenu(4);
+  if(setMenu(4)==1)
+    Serial.println("Succesfully uploaded Menu 4");  
+Serial.println("uploading Menu 5");
 
   Menu.menu_struct.numOfMenuListItems=6;
   string_to_array(Menu.menu_struct.heading,"ACCESS");
@@ -106,7 +114,9 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[3]=13;                               
   Menu.menu_struct.functionPointerIndex[4]=14;  
   Menu.menu_struct.functionPointerIndex[5]=15;  
-  setMenu(5);
+  if(setMenu(5)==1)
+    Serial.println("Succesfully uploaded Menu 5"); 
+  Serial.println("uploading Menu 6");
 
   Menu.menu_struct.numOfMenuListItems=7;
   string_to_array(Menu.menu_struct.heading,"INFORMATION");
@@ -132,5 +142,13 @@ void loop() {
   Menu.menu_struct.functionPointerIndex[4]=20;                               
   Menu.menu_struct.functionPointerIndex[5]=21;  
   Menu.menu_struct.functionPointerIndex[6]=22; 
-  setMenu(6);
+  if(setMenu(6)==1)
+    Serial.println("Succesfully uploaded Menu 6");  
+}
+void string_to_array(char* array,String str)
+{
+    str.toCharArray(array,str.length()+1);
+}
+void loop() {
+  
 }

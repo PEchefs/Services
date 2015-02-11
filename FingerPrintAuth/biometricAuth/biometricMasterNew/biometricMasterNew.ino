@@ -71,7 +71,7 @@ void loop()
                                         break;
                         case SCROLLDOWN:scrolldown();
                                         break;
-                        case ENTER:     getMenu(currentMenu);
+                        case ENTER:     //getMenu(currentMenu);
                                         enterMenuItem(Menu.menu_struct);
                                         break;
                         case ESC:       escMenuList();
@@ -81,6 +81,7 @@ void loop()
                         Serial.println("Calling Display Menu Function");
                      getMenu(currentMenu);
                      displayMenu(Menu.menu_struct);
+                    
                      // displayMenu();
                     }
                     break;
