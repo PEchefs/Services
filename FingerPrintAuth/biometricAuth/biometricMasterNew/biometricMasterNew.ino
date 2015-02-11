@@ -1,11 +1,15 @@
-
 #include <functions.h>
 #include <Ext_EEPROM.h>
 #include <Menu.h>
 #include <gLCD_u8glib.h>
 #include <U8glib.h>
+#include <Time.h>
+#include <DS1307RTC.h>
+//#include <TimerOne.h>
+//#include <TimerThree.h>
 #include <Wire.h>
 #include <stdlib.h>
+
 #define DEBUG 1
 #define DEBUGWOWIRE 0
 
@@ -20,8 +24,11 @@ extern unsigned int serialInputNumber;
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
 byte x= 0;
-
-
+boolean timeUpdateRequired=false;
+unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0;
+  
+tmElements_t currentTime;
+boolean RTCreadError=false;
 
 unsigned short isKeyPressed()
 {
@@ -35,9 +42,35 @@ unsigned short isKeyPressed()
     return 0;
 }
 
+void print2digits(int number) {
+  if (number >= 0 && number < 10) {
+    Serial.write('0');
+  }
+  Serial.print(number);
+}
 
+void updateTime()
+{
+                        if (RTC.read(currentTime))
+                        {
+                          print2digits(currentTime.Hour);
+                          Serial.write(':');
+                          print2digits(currentTime.Minute);
+                          Serial.write(':');
+                          print2digits(currentTime.Second);
+                          Serial.println("");
+                        }
+                        else
+                        {
+                         Serial.println("RTC read error");
+                         RTCreadError=true;
+                        }
+                       // timeUpdateRequired=false;
+                     
+}
 
 void setup() {
+  
   Serial.begin(115200);
   pinMode(17,OUTPUT);
   digitalWrite(17,HIGH);
@@ -45,6 +78,8 @@ void setup() {
   {
    i2c_eeprom_init();
   }
+ // Timer1.initialize(1000000); // set a timer of length 100000 microseconds (or 0.1 sec - or 10Hz => the led will blink 5 times, 5 cycles of on-and-off, per second)
+ // Timer1.attachInterrupt( updateTime ); // attach the service routine here
   Serial.println("End of setup");
   //initializeMenus();
   getMenu(0);
@@ -53,6 +88,7 @@ void setup() {
 
 void loop()
 {
+   
 
   //Serial.println("Beginning Menu assignments");
  
@@ -60,7 +96,15 @@ void loop()
   switch (currentState)
   {
     case HOMESCREEN:Serial.println("Current State: HOMESCREEN");
-                    poll();
+                    //Serial.print("Time:  ");
+                    displayHomeScreen(currentTime);
+
+                     poll();
+                    delay(900);
+                      if(isKeyPressed())
+                      {
+                        updateState(MENUSCREEN);
+                      } 
                     break;
     
     case MENUSCREEN:if(isKeyPressed())
@@ -79,11 +123,12 @@ void loop()
                       }
                       if(DEBUG)
                         Serial.println("Calling Display Menu Function");
-                     getMenu(currentMenu);
-                     displayMenu(Menu.menu_struct);
+                    
                     
                      // displayMenu();
                     }
+                     getMenu(currentMenu);
+                     displayMenu(Menu.menu_struct);
                     break;
 
     case FPAUTH:break;
@@ -165,6 +210,20 @@ void loop()
   }
   
 
+  if(timeUpdateRequired==false)
+    timeUpdateCheck2=millis();
+  else
+    {
+      timeUpdateCheck1=millis();
+      timeUpdateCheck2=millis();
+      timeUpdateRequired=false;
+    }
+    if(timeUpdateCheck2-timeUpdateCheck1>10000)
+      {
+        timeUpdateRequired=true;
+        updateTime();
+      }
+      
 
 }
 void serialEvent() {
