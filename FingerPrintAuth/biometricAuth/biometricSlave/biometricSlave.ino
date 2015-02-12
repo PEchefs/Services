@@ -3,6 +3,7 @@
 #include "Keypad.h"
 #include <Adafruit_Fingerprint.h>
 #include <SoftwareSerial.h>
+#include <Arduino.h>
 
 #define LOCALADDRESS 2
 
@@ -40,6 +41,7 @@ union
   byte g_RecByte_byt[16];  
 }g_ReceivedByte_un;
 byte response[16]={0,0,0x40,0x46,0};
+int id=0;
 int flag=0;
 int req_flag=0;
 void setup()
@@ -55,8 +57,8 @@ void setup()
 
 void loop()
 {
-  delay(1000);
-  Serial.println("Waiting for Omar");  
+
+  //Serial.println("Waiting for Omar");  
   switch(flag)
   {
     case 1:if(fingerprint_check())
@@ -71,7 +73,8 @@ void loop()
                       response[3]=0x40;
                     else
                       response[3]=0x41;  flag=0;break;
-    case 4:if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
+    case 4://Serial.println(g_ReceivedByte_un.g_RecByte_split.data[i]);
+           if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
                       response[3]=0x40;
                     else
                       response[3]=0x43;  flag=0;break;
@@ -79,16 +82,47 @@ void loop()
                       response[3]=0x40;
                     else
                       response[3]=0x43;break;
-    case 6:response[3]=0x44;
-           response[4]=getFingerprintIDez();  flag=0;break;
+    case 6:
+           id=0;
+           //response[4]=getFingerprintIDez();  flag=0;break;
+           id=getFingerprintIDez();
+           //Serial.print("ID: ");Serial.println(id);
+           if(id==-1)
+              {
+                //No Finger Detected
+             //   Serial.println("No Finger Detected");
+                
+                response[4]=0;
+                response[5]=0;
+                response[3]=0x48;
+                break;  
+              }    
+           else if(id==2)
+              {
+               // Serial.println("Finger Detected, No Match Found");
+
+                response[4]=0;
+                response[5]=0;
+                response[3]=0x45;                
+                break; //Fingerprint Detected, No match found
+              }
+           else
+              {
+                //Serial.println("Fingerprint match found.");
+                //Fingerprint Match found
+
+                response[4]=lowByte(id);
+                response[5]=highByte(id);
+                response[3]=0x44;                
+                break;
+              }
+           
+           //flag=0;
+          
+           //break;
     default:break;
   }
-  if(req_flag==1)
-  {
-    Serial.println("response sent");
-    
-    req_flag=0;   
-  }
+  flag=0;
 }
 void receiveEvent(int howMany)
 {
@@ -96,10 +130,12 @@ void receiveEvent(int howMany)
   {
     for(int i=0;i<16;i++)
       g_ReceivedByte_un.g_RecByte_byt[i]=Wire.read();
-    Serial.print("header");Serial.println(g_ReceivedByte_un.g_RecByte_split.header);
-    Serial.print("cmd");Serial.println(g_ReceivedByte_un.g_RecByte_split.cmd);
+//    Serial.print("header");Serial.println(g_ReceivedByte_un.g_RecByte_split.header);
+//    Serial.print("cmd");Serial.println(g_ReceivedByte_un.g_RecByte_split.cmd);
     response[2]=0x40;
     response[3]=0x46;
+    response[4]=0x00;
+    response[5]=0x00;
     switch(g_ReceivedByte_un.g_RecByte_split.cmd)
     {
       case 0x3130:  flag=1;
@@ -112,7 +148,7 @@ void receiveEvent(int howMany)
                     break;
       case 0x3530:  flag=5;
                     break;
-      case 0x3536:  flag=6;break;
+      case 0x3830:  flag=6;break;
       default:break;
     }
       req_flag=1;
@@ -121,7 +157,7 @@ void receiveEvent(int howMany)
 
 void requestEvent()
 {
-  Serial.println("Received Request");
+  //Serial.println("Received Request");
   Wire.write(response,16);
   req_flag=1;
 }
@@ -197,7 +233,6 @@ void requestEvent()
 //  // as expected by master
 //  }
 //}
-
 
 
 

@@ -24,8 +24,8 @@ extern unsigned int serialInputNumber;
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
 byte x= 0;
-boolean timeUpdateRequired=false;
-unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0;
+boolean timeUpdateRequired=false,homeScreenUpdate=false;
+unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0,homeScreenTimeCheck=0;
   
 tmElements_t currentTime;
 boolean RTCreadError=false;
@@ -96,12 +96,19 @@ void loop()
   //Serial.println("Ending Menu Assignments");
   switch (currentState)
   {
-    case HOMESCREEN:Serial.println("Current State: HOMESCREEN");
-                    //Serial.print("Time:  ");
-                    displayHomeScreen(currentTime);
+    case HOMESCREEN:
+                  
+
+                    if(homeScreenTimeCheck-millis()>1000)
+                      {
+                          Serial.println("Current State: HOMESCREEN");
+                          displayHomeScreen(currentTime);
+                          homeScreenTimeCheck=millis();
+                      }
+
 
                      poll();
-                    delay(900);
+                    
                       if(isKeyPressed())
                       {
                         updateState(MENUSCREEN);
