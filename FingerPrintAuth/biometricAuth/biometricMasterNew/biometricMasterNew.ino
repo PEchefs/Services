@@ -83,6 +83,7 @@ void setup() {
   Serial.println("End of setup");
   //initializeMenus();
   getMenu(0);
+  updateTime();
 }
 
 
