@@ -1,0 +1,22 @@
+# Tank Ball sensors (Magnetic sensor)(0x97)(151)
+71	151
+72	151
+73	151
+74	151
+75	151
+76	151
+77	151
+
+
+# Depth Sensors (Ultrasonic sensor)(0x98)(152)
+33	152
+34	152
+35	152
+36	152
+
+# Flow sensors (Hall effect sensor)(0x99)(153)
+61	153
+62	153
+63	153
+64	153
+65	153

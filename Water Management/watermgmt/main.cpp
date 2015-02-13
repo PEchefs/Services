@@ -22,7 +22,7 @@ unsigned short NUMBER_OF_SENSORS=0;
 unsigned short NUMBER_OF_RELAYS=0;
 char sensorInfoFilePath[]="sensorsInfo2.txt";
 char sensorDataFilePath[]="sensorsData.txt";
-//char relayDataFilePath[]="relaysData.txt";
+char relayDataFilePath[]="relaysData.txt";
 char relayInfoFilePath[]="relaysInfo.txt";
 char errorLogFilePath[]="errorLog.txt";
 unsigned short COMport=0;
@@ -31,6 +31,7 @@ struct {
     char sensorID[3];
     char sensorType[3];
 } sensorReadString;
+
 
 struct {
     char relayID[3];
@@ -145,6 +146,39 @@ int writeSensorsInfo(char* sensorDataFilePath)
     return 1;
 }
 
+int writeRelayInfo(char* relayDataFilePath, unsigned short index)
+{
+    printf("Called Relay Info write routine!");
+    FILE *relayInfo;
+    //unsigned short int i=0;
+    relayInfo = fopen(relayDataFilePath,"a");
+    if(relayInfo==NULL)
+    {
+        printf("Relay Info file pointer null");
+    }
+    time_t mytime;
+    mytime = time(NULL);
+    printf("Relay info: ");
+    printf("%ld,%d,%d",mytime,relayTable[index].relayID,relayTable[index].relayValue);
+    int ret=fprintf(relayInfo,"%ld",mytime);
+    if(ret<0)
+        printf("Write Failed!\n");
+    else
+        printf("Bytes written:%d\n",ret);
+    ret=fprintf(relayInfo,",%d,%d",relayTable[index].relayID,relayTable[index].relayValue);
+    if(ret<0)
+        printf("Write Failed!\n");
+    else
+        printf("Bytes written:%d\n",ret);
+    ret=fprintf(relayInfo,";\n");
+    if(ret<0)
+        printf("Write Failed!\n");
+    else
+        printf("Bytes written:%d\n",ret);
+    fclose(relayInfo);
+    return 1;
+}
+
 int writeErrorLog(char* sensorDataFilePath,unsigned char ID,unsigned char Type,char* errorText)
 {
     FILE *errorLog;
@@ -166,10 +200,12 @@ int main(int argc, char *argv[])
     unsigned char relayIndex=100;
     unsigned char relayState=0;
 	COMport=atoi(argv[1])-1;
+
     if (argc == 2)
     {
         readSensorFlag=1;
         relayOperateFlag=0;
+
     }
     else if (argc == 4)
     {
@@ -187,8 +223,10 @@ int main(int argc, char *argv[])
     }
    // strcat(COMport,argv[1]);
 
+
     if (readSensorFlag == 1)
     {
+
 
 
 	// Read SenorsInfo file to obtain information regarding SensorIDs and SensorType to query for data
@@ -239,7 +277,7 @@ int main(int argc, char *argv[])
 				continue;
 			}
 			if(n == 3)
-			{
+		    {
 				responseCode=responseString[0];
 				responseVal=responseString[1]+(responseString[2]*256);
 			/*
@@ -304,15 +342,15 @@ int main(int argc, char *argv[])
 			if(RS232_SendBuf(COMport,commandToSend,6) == -1)
 			{
 				printf("Sending Serial Data failed!");
-				writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Sending Serial Data failed!");
+				writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Sending Serial Data failed!");
 				EXIT_FAILURE;
 			}
 			Sleep(2000);
 			int n = RS232_PollComport(COMport, responseString, 3);
 			if(n == 0)
 			{
-				printf("Warning! No data received for ID:%d Type:%d\n",relayTable[index].relayID,relayTable[index].relayType);
-				writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Warning!!! No data received!");
+				printf("Warning! No data received for ID:%d Type:%d\n",relayTable[relayIndex].relayID,relayTable[relayIndex].relayType);
+				writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Warning!!! No data received!");
 				EXIT_FAILURE;
 			}
 			if(n == 3)
@@ -324,24 +362,24 @@ int main(int argc, char *argv[])
 				printf("responseString[1]=%X\n",responseString[1]);
 				printf("responseString[2]=%X\n",responseString[2]);
 				*/
-				printf ("%d \t",index);
+				printf ("%d \t",relayIndex);
 				printf("%X \t",responseCode);
 				printf("%d \n",responseVal);
 				if(responseCode==0xC9)
-					relayTable[index].relayValue=responseVal;
+					relayTable[relayIndex].relayValue=responseVal;
 				else if (responseCode==0xCA)
 				{
 					switch(responseVal)
 					{
-						case senseError:        writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Sense Error!");
+						case senseError:        writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Sense Error!");
 												break;
-						case ActuationError:    writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Actuation Error!");
+						case ActuationError:    writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Actuation Error!");
 												break;
-						case invalidCommand:    writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Invalid Command Error!");
+						case invalidCommand:    writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Invalid Command Error!");
 												break;
-						case invalidType:       writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"Invalid Type Error!");
+						case invalidType:       writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"Invalid Type Error!");
 												break;
-						case IDforTypeNotFound: writeErrorLog(errorLogFilePath,relayTable[index].relayID,relayTable[index].relayType,"ID for Type Not Found Error!");
+						case IDforTypeNotFound: writeErrorLog(errorLogFilePath,relayTable[relayIndex].relayID,relayTable[relayIndex].relayType,"ID for Type Not Found Error!");
 												break;
 						default:break;
 					}
@@ -349,7 +387,8 @@ int main(int argc, char *argv[])
 			}
 
 
-		writeSensorsInfo(sensorDataFilePath);
+		writeRelayInfo(relayDataFilePath,relayIndex);
+
 		EXIT_SUCCESS;
 		}
 }

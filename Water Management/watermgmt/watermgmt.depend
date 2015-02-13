@@ -1,0 +1,135 @@
+# depslib dependency file v1.0
+1418498438 source:c:\projects\watermgmt\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	"rs232.h"
+
+1417853314 source:c:\projects\watermgmt\rs232.c
+	"rs232.h"
+
+1417852454 c:\projects\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1419095547 source:c:\users\omar ibrahim hussain\documents\photoelectricchefs\services\water management\watermgmt\watermgmt\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	"rs232.h"
+
+1417852454 c:\users\omar ibrahim hussain\documents\photoelectricchefs\services\water management\watermgmt\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1417853314 source:c:\users\omar ibrahim hussain\documents\photoelectricchefs\services\water management\watermgmt\watermgmt\rs232.c
+	"rs232.h"
+
+1419095547 source:d:\hussain\googledrive\photoelectricchefs\services\water management\watermgmt\watermgmt\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	"rs232.h"
+
+1417852454 d:\hussain\googledrive\photoelectricchefs\services\water management\watermgmt\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1417853314 source:d:\hussain\googledrive\photoelectricchefs\services\water management\watermgmt\watermgmt\rs232.c
+	"rs232.h"
+
+1417853314 source:d:\hussain\googledrive\photoelectricchefs\services\water_management\watermgmt\watermgmt\rs232.c
+	"rs232.h"
+
+1417852454 d:\hussain\googledrive\photoelectricchefs\services\water_management\watermgmt\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1423834516 source:c:\users\omar ibrahim hussain\documents\github\services\water management\watermgmt\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	"rs232.h"
+
+1417852454 c:\users\omar ibrahim hussain\documents\github\services\water management\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1417853314 source:c:\users\omar ibrahim hussain\documents\github\services\water management\watermgmt\rs232.c
+	"rs232.h"
+
+1423838359 source:c:\users\omar ibrahim hussain\documents\photoelectricchefs\watermgmt\main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<time.h>
+	<Windows.h>
+	<unistd.h>
+	<string.h>
+	"rs232.h"
+
+1417852454 c:\users\omar ibrahim hussain\documents\photoelectricchefs\watermgmt\rs232.h
+	<stdio.h>
+	<string.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<limits.h>
+	<windows.h>
+
+1417853314 source:c:\users\omar ibrahim hussain\documents\photoelectricchefs\watermgmt\rs232.c
+	"rs232.h"
+
