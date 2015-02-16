@@ -26,6 +26,7 @@ byte colPins[cols] = {A4, A5, A6, A7}; //connect to the column pinouts of the ke
 Keypad keypad1 = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
 
 byte dataToSend[10]={0,0,0,0,0,0,0,0,0,0};
+unsigned long pollTimeCheck=0;
 
 unsigned int g_StartByte_u16 = 0x7771; //Start Pattern
 unsigned int g_EndByte_u16 = 0x7177; //End Pattern
@@ -55,9 +56,21 @@ void setup()
   Serial.println(fingerprint_check(),DEC);
 }
 
+void poll()
+{
+  id=-1;
+  id=getFingerprintIDez();
+}
+    
+
 void loop()
 {
-
+  if(millis()-pollTimeCheck>100)
+  {  
+    poll();
+    pollTimeCheck=millis();
+    Serial.println("I'm back");
+  }
   //Serial.println("Waiting for Omar");  
   switch(flag)
   {
@@ -81,21 +94,21 @@ void loop()
     case 5:if(deleteFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
                       response[3]=0x40;
                     else
-                      response[3]=0x43;break;
+                      response[3]=0x43;  flag=0;break;
     case 6:
-           id=0;
+         ///  id=0;
            //response[4]=getFingerprintIDez();  flag=0;break;
-           id=getFingerprintIDez();
+         ///  id=getFingerprintIDez();
            //Serial.print("ID: ");Serial.println(id);
            if(id==-1)
               {
                 //No Finger Detected
-             //   Serial.println("No Finger Detected");
+                Serial.println("No Finger Detected");
                 
                 response[4]=0;
                 response[5]=0;
                 response[3]=0x48;
-                break;  
+                
               }    
            else if(id==2)
               {
@@ -104,7 +117,7 @@ void loop()
                 response[4]=0;
                 response[5]=0;
                 response[3]=0x45;                
-                break; //Fingerprint Detected, No match found
+                //Fingerprint Detected, No match found
               }
            else
               {
@@ -114,15 +127,16 @@ void loop()
                 response[4]=lowByte(id);
                 response[5]=highByte(id);
                 response[3]=0x44;                
-                break;
+
               }
-           
+             flag=0;
+              break; 
            //flag=0;
           
            //break;
     default:break;
   }
-  flag=0;
+//  flag=0;
 }
 void receiveEvent(int howMany)
 {
@@ -157,8 +171,10 @@ void receiveEvent(int howMany)
 
 void requestEvent()
 {
-  //Serial.println("Received Request");
+  Serial.println("Received Request");
   Wire.write(response,16);
+  Serial.println("Response sent");
+  //Serial.write(response,16);
   req_flag=1;
 }
 
@@ -233,6 +249,7 @@ void requestEvent()
 //  // as expected by master
 //  }
 //}
+
 
 
 
