@@ -9,6 +9,9 @@
 //#include <TimerThree.h>
 #include <Wire.h>
 #include <stdlib.h>
+#include<Database.h>
+#include<SoftwareSerial.h>
+
 
 #define DEBUG 1
 #define DEBUGWOWIRE 0
@@ -20,6 +23,7 @@ extern state newState;
 extern menu_un Menu;
 extern unsigned short MenuFunctionToCallIndex;
 extern unsigned int serialInputNumber;
+extern byte employeeStats.data[USER_DATA_LENGTH];
 
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
@@ -29,6 +33,13 @@ unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0,homeScreenTimeCheck=0;
   
 tmElements_t currentTime;
 boolean RTCreadError=false;
+
+SoftwareSerial mySerial(2, 3); //RX,TX
+byte serialData[100];
+union {
+  int serialDataCMDID=0;
+  byte serialDataCMDIDbytearray[2]=0;
+} cmdid;
 
 unsigned short isKeyPressed()
 {
@@ -72,6 +83,7 @@ void updateTime()
 void setup() {
   
   Serial.begin(115200);
+  mySerial.begin(115200);
   pinMode(17,OUTPUT);
   digitalWrite(17,HIGH);
   if(!DEBUGWOWIRE)
@@ -89,7 +101,7 @@ void setup() {
 
 void loop()
 {
-   
+  
 
   //Serial.println("Beginning Menu assignments");
  
@@ -279,7 +291,52 @@ void serialEvent() {
      //   if(DEBUG)
      //     Serial.println("Key press serial event function exit");
      }
-  //}
+     boolean wifiReceive=false;
+     unsigned short count=0;
+     if(mySerial.available())
+     {
+       byte header[2]={0,0};
+       header[0]=mySerial.read();
+       header[1]=mySerial.read();
+       if(header[0]==0x50&&header[1]==0x50)
+         wifiReceive=true;
+     }
+     else
+       wifiReceive=false;
+     if(wifiReceive==true)
+     {
+       //Display on LCD: Receiving instructions from Server
+       cmdid.serialDataCMDIDbytearray[0]=mySerial.read();
+       cmdid.serialDataCMDIDbytearray[1]=mySerial.read();
+       
+
+           switch(cmdid.serialDataCMDID)
+           {
+             case 0x7170://FP download from server to biometric device
+                         //Display on LCD: Downloading FingerPrint Database
+                           
+                         break;
+             case 0x7270://DB download from server to EEPROM
+                         //Display on LCD: Downloading Employee Database
+                         for(count=0;count<96;count++)
+                         {
+                           employeeStats.data[count]=mySerial.read();
+                         }
+                         database_setemployee(employeeStats.data);
+
+                         break;                       
+         //    case 0x7170://FP download from server to biometric device
+           //              break;                       
+             //case 0x7170://FP download from server to biometric device
+               //          break;                       
+             default:break;
+           }
+ }
+       
+     
+    // 
+     
+  //
  /* else
   {
     unsigned short count=0;
