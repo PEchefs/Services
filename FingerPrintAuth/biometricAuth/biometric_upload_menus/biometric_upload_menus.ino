@@ -51,14 +51,17 @@ Serial.println("uploading Menu 2");
   string_to_array(Menu.menu_struct.List[1],"2.  Information");
   string_to_array(Menu.menu_struct.List[2],"3.  Self Test");
   string_to_array(Menu.menu_struct.List[3],"4.  Factory Reset");
+  string_to_array(Menu.menu_struct.List[4],"5.  Update DB");
   Menu.menu_struct.nextLevelMenuIndex[0]=5;
   Menu.menu_struct.nextLevelMenuIndex[1]=6;
   Menu.menu_struct.nextLevelMenuIndex[2]=255;
   Menu.menu_struct.nextLevelMenuIndex[3]=255;
+  Menu.menu_struct.nextLevelMenuIndex[4]=255;
   Menu.menu_struct.functionPointerIndex[0]=255;                               
   Menu.menu_struct.functionPointerIndex[1]=255;                               
   Menu.menu_struct.functionPointerIndex[2]=8;  
-  Menu.menu_struct.functionPointerIndex[3]=9;  
+  Menu.menu_struct.functionPointerIndex[3]=9; 
+  Menu.menu_struct.functionPointerIndex[3]=23;  
   if(setMenu(2)==1)
     Serial.println("Succesfully uploaded Menu 2");  
 Serial.println("uploading Menu 3");

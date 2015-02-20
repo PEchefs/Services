@@ -218,9 +218,8 @@ void loop()
                                 break;
                         case 22:infoLog();
                                 break;
-                        
-                        
-                        
+                        case 23:updateDB();
+                                break;
                       }
                       
                       break;
@@ -293,7 +292,7 @@ void serialEvent() {
      }
      boolean wifiReceive=false;
      unsigned short count=0;
-     if(mySerial.available())
+     if(mySerial.available()>1)
      {
        byte header[2]={0,0};
        header[0]=mySerial.read();
