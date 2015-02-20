@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include<Database.h>
 #include<SoftwareSerial.h>
+#include<Wifi.h>
 
 
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUGWOWIRE 0
 
 extern unsigned short currentMenu;
@@ -33,12 +34,7 @@ unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0,homeScreenTimeCheck=0;
 tmElements_t currentTime;
 boolean RTCreadError=false;
 
-SoftwareSerial mySerial(2, 3); //RX,TX
-byte serialData[100];
-union {
-  int serialDataCMDID;
-  byte serialDataCMDIDbytearray[2];
-} cmdid;
+
 
 unsigned short isKeyPressed()
 {
@@ -82,7 +78,6 @@ void updateTime()
 void setup() {
   
   Serial.begin(115200);
-  mySerial.begin(115200);
   pinMode(17,OUTPUT);
   digitalWrite(17,HIGH);
   if(!DEBUGWOWIRE)
@@ -95,11 +90,9 @@ void setup() {
   //initializeMenus();
   getMenu(0);
   updateTime();
+  wifi_Init();
 }
 
-void updateDB()
-{
-} 
 void loop()
 {
   
@@ -110,11 +103,10 @@ void loop()
   switch (currentState)
   {
     case HOMESCREEN:
-                  
-
-                    if(homeScreenTimeCheck-millis()>1000)
+                    if(millis()-homeScreenTimeCheck>1000)
                       {
-                          Serial.println("Current State: HOMESCREEN");
+                          //if(DEBUG)
+                            Serial.println("Current State: HOMESCREEN");
                           displayHomeScreen(currentTime);
                           homeScreenTimeCheck=millis();
                       }
@@ -221,8 +213,10 @@ void loop()
                                 break;
                         case 23:updateDB();
                                 break;
+                        default:break;
                       }
-                      
+                      MenuFunctionToCallIndex=-1;
+                      updateState(MENUSCREEN);
                       break;
     
     default : break;
@@ -243,6 +237,7 @@ void loop()
         timeUpdateRequired=true;
         updateTime();
       }
+    wifi_Poll();
       
 
 }
@@ -291,62 +286,7 @@ void serialEvent() {
      //   if(DEBUG)
      //     Serial.println("Key press serial event function exit");
      }
-     boolean wifiReceive=false;
-     unsigned short count=0;
-     if(mySerial.available()>1)
-     {
-       byte header[2]={0,0};
-       header[0]=mySerial.read();
-       header[1]=mySerial.read();
-       if(header[0]==0x50&&header[1]==0x50)
-         wifiReceive=true;
-     }
-     else
-       wifiReceive=false;
-     if(wifiReceive==true)
-     {
-       //Display on LCD: Receiving instructions from Server
-       cmdid.serialDataCMDIDbytearray[0]=mySerial.read();
-       cmdid.serialDataCMDIDbytearray[1]=mySerial.read();
-       byte temp[100]={0};
-
-           switch(cmdid.serialDataCMDID)
-           {
-             case 0x7170://FP download from server to biometric device
-                         //Display on LCD: Downloading FingerPrint Database
-                         break;
-             case 0x7270://DB download from server to EEPROM
-                         //Display on LCD: Downloading Employee Database
-                         for(count=0;count<60;count++)
-                         {
-                           temp[count]=mySerial.read();
-                         }
-                         database_setemployee(temp);
-
-                         break;                       
-         //    case 0x7170://FP download from server to biometric device
-           //              break;                       
-             //case 0x7170://FP download from server to biometric device
-               //          break;                       
-             default:break;
-           }
- }
- 
      
-    // 
-     
-  //
- /* else
-  {
-    unsigned short count=0;
-    char inchar[10]="";
-    while (Serial.available()>0) 
-    {
-        inchar[count]=char(Serial.read());
-        count++;        
-    }
-    serialInputNumber=strtoul(inchar,NULL,0);
-  }*/  
 }
 
 

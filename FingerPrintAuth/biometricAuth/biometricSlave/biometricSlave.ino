@@ -53,7 +53,7 @@ void setup()
   
   Wire.onRequest(requestEvent); // register event
   Wire.onReceive(receiveEvent); // register event
-  Serial.begin(115200);   // start serial for output
+  Serial.begin(9600);   // start serial for output
   fingerprint_init();
   Serial.println(fingerprint_check(),DEC);
 }
@@ -103,7 +103,16 @@ void loop()
            //response[4]=getFingerprintIDez();  flag=0;break;
          ///  id=getFingerprintIDez();
            //Serial.print("ID: ");Serial.println(id);
-           if(id==-1)
+            //Serial.println("Fingerprint match found.");
+                //Fingerprint Match found
+            if(RFIDdetected==true)
+            {
+              response[3]=0x47;
+              for(int i=4;i<=15;i++)
+                response[i]=RFID[i-4];
+            }
+            
+           else if(id==-1)
               {
                 //No Finger Detected
                 Serial.println("No Finger Detected");
@@ -122,25 +131,12 @@ void loop()
                 response[3]=0x45;                
                 //Fingerprint Detected, No match found
               }
-           else
-              {
-                //Serial.println("Fingerprint match found.");
-                //Fingerprint Match found
-                if(RFIDdetected==true)
-                {
-                  response[3]=0x47;
-                  for(i=4;i<=15;i++)
-                    response[i]=RFID[i-4];
-                  RFIDdetected=false;
-                }
-                else    
-                {
-                  response[4]=lowByte(id);
-                  response[5]=highByte(id);
-                  response[3]=0x44;                
-                }
-
-              }
+           else    
+            {
+              response[4]=lowByte(id);
+              response[5]=highByte(id);
+              response[3]=0x44;                
+            }
              flag=0;
               break; 
            //flag=0;
@@ -160,8 +156,8 @@ void receiveEvent(int howMany)
 //    Serial.print("cmd");Serial.println(g_ReceivedByte_un.g_RecByte_split.cmd);
     response[2]=0x40;
     response[3]=0x46;
-    response[4]=0x00;
-    response[5]=0x00;
+    for(int i=4;i<16;i++)
+      response[i]=0x00;
     switch(g_ReceivedByte_un.g_RecByte_split.cmd)
     {
       case 0x3130:  flag=1;
@@ -187,98 +183,33 @@ void requestEvent()
   Wire.write(response,16);
   Serial.println("Response sent");
   //Serial.write(response,16);
+  if(RFIDdetected)
+  {
+    int i=0;
+    for(i=4;i<16;i++)
+      if(response[i]==0)
+        break;
+    if(i==16)
+    {
+      RFIDdetected=false;
+      Serial.println("RFID Response sent");
+    }
+  }
+   
   req_flag=1;
 }
 
 void serialEvent()
 {
-  if(Serial.available()>10)
+  if(Serial.available()>11)
   {
-    i=0;
-    while(Serial.available)
-    {
-      RFID[i]=Serial.read();
-      i++;
-    }
+    for(int i=0;i<12;i++)
+      {
+         RFID[i]=Serial.read();
+         Serial.print(RFID[i]);
+      }
+      
     RFIDdetected=true;
-  }
-  
-
-    
+  }    
 }
-
-// function that executes whenever data is received from master
-// this function is registered as an event, see setup()
-
-//void serialEvent()
-//{
-//  Serial.println("Entered I2C receive function");
-//  unsigned short i=0;
-//  if (Serial.available()>5) // loop through all but the last
-//  {
-//    char c = Serial.read(); // receive byte as a character
-//    Serial.print(c);         // print the character
-//    g_ReceivedByte_un.g_RecByte_byt[i]=c;
-//    i++;
-//  
-//    Serial.println("");
-//    Serial.println(g_ReceivedByte_un.header, DEC);
-//    Serial.println(g_StartByte_u16,DEC);
-//    Serial.println(g_ReceivedByte_un.footer, DEC);
-//    Serial.println(g_EndByte_u16,DEC);
-//    Serial.println(g_ReceivedByte_un.command, DEC);
-//    Serial.println(g_ReceivedByte_un.RFID, DEC);
-//    
-//  if ((g_ReceivedByte_un.header == g_StartByte_u16)&&(g_ReceivedByte_un.footer == g_EndByte_u16))
-//  {
-//    if (g_ReceivedByte_un.command == 'a')
-//    {
-//      Serial.println("Command received : Enroll");
-//      enroll(g_ReceivedByte_un.RFID);
-//    }
-//
-//    if (g_ReceivedByte_un.command == 'd')
-//    {
-//      Serial.println("Command received : Delete");
-//      deletetemp(g_ReceivedByte_un.RFID);
-//    }
-//    
-//    if (g_ReceivedByte_un.command == 'f')
-//    {
-//      Serial.println("Command received : Download Fingerprint");
-//      showtemplate(g_ReceivedByte_un.RFID);
-//    }
-//    
-//    if (g_ReceivedByte_un.command == 'g')
-//    {
-//      Serial.println("Command received : Show Number of FingerPrint Id's Stored");
-//      tempnumber();
-//    }
-//      
-//    if (g_ReceivedByte_un.command == 'j')
-//    {
-//      Serial.println("Command received : Search Fingerprint");
-//      getFingerprintID();
-//    }
-//    
-//    if (g_ReceivedByte_un.command == 'h')
-//    {
-//      Serial.println("Command received : Upload Fingerprint");
-//      uploadtemp(g_ReceivedByte_un.RFID);
-//    }
-//  }
-// }
-//}
-//
-//void sendToMaster(byte data[])
-//{
-//  for(unsigned short i=0;i<10;i++)
-//  {
-//    Wire.write(data[i]); // respond with message of 6 bytes
-//  // as expected by master
-//  }
-//}
-
-
-
 
