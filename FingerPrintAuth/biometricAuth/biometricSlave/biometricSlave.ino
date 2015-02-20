@@ -27,6 +27,8 @@ Keypad keypad1 = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
 
 byte dataToSend[10]={0,0,0,0,0,0,0,0,0,0};
 unsigned long pollTimeCheck=0;
+byte RFID[12];
+boolean RFIDdetected=false;
 
 unsigned int g_StartByte_u16 = 0x7771; //Start Pattern
 unsigned int g_EndByte_u16 = 0x7177; //End Pattern
@@ -60,6 +62,7 @@ void poll()
 {
   id=-1;
   id=getFingerprintIDez();
+
 }
     
 
@@ -123,10 +126,19 @@ void loop()
               {
                 //Serial.println("Fingerprint match found.");
                 //Fingerprint Match found
-
-                response[4]=lowByte(id);
-                response[5]=highByte(id);
-                response[3]=0x44;                
+                if(RFIDdetected==true)
+                {
+                  response[3]=0x47;
+                  for(i=4;i<=15;i++)
+                    response[i]=RFID[i-4];
+                  RFIDdetected=false;
+                }
+                else    
+                {
+                  response[4]=lowByte(id);
+                  response[5]=highByte(id);
+                  response[3]=0x44;                
+                }
 
               }
              flag=0;
@@ -176,6 +188,23 @@ void requestEvent()
   Serial.println("Response sent");
   //Serial.write(response,16);
   req_flag=1;
+}
+
+void serialEvent()
+{
+  if(Serial.available()>10)
+  {
+    i=0;
+    while(Serial.available)
+    {
+      RFID[i]=Serial.read();
+      i++;
+    }
+    RFIDdetected=true;
+  }
+  
+
+    
 }
 
 // function that executes whenever data is received from master
