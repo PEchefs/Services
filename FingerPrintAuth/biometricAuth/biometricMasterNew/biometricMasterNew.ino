@@ -23,7 +23,6 @@ extern state newState;
 extern menu_un Menu;
 extern unsigned short MenuFunctionToCallIndex;
 extern unsigned int serialInputNumber;
-extern byte employeeStats.data[USER_DATA_LENGTH];
 
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
@@ -37,8 +36,8 @@ boolean RTCreadError=false;
 SoftwareSerial mySerial(2, 3); //RX,TX
 byte serialData[100];
 union {
-  int serialDataCMDID=0;
-  byte serialDataCMDIDbytearray[2]=0;
+  int serialDataCMDID;
+  byte serialDataCMDIDbytearray[2];
 } cmdid;
 
 unsigned short isKeyPressed()
@@ -98,7 +97,9 @@ void setup() {
   updateTime();
 }
 
-
+void updateDB()
+{
+} 
 void loop()
 {
   
@@ -307,21 +308,20 @@ void serialEvent() {
        //Display on LCD: Receiving instructions from Server
        cmdid.serialDataCMDIDbytearray[0]=mySerial.read();
        cmdid.serialDataCMDIDbytearray[1]=mySerial.read();
-       
+       byte temp[100]={0};
 
            switch(cmdid.serialDataCMDID)
            {
              case 0x7170://FP download from server to biometric device
                          //Display on LCD: Downloading FingerPrint Database
-                           
                          break;
              case 0x7270://DB download from server to EEPROM
                          //Display on LCD: Downloading Employee Database
-                         for(count=0;count<96;count++)
+                         for(count=0;count<60;count++)
                          {
-                           employeeStats.data[count]=mySerial.read();
+                           temp[count]=mySerial.read();
                          }
-                         database_setemployee(employeeStats.data);
+                         database_setemployee(temp);
 
                          break;                       
          //    case 0x7170://FP download from server to biometric device
@@ -331,7 +331,7 @@ void serialEvent() {
              default:break;
            }
  }
-       
+ 
      
     // 
      

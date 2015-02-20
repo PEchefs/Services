@@ -1,3 +1,4 @@
+#include <Time.h>
 #include <Ext_EEPROM.h>
 #include <Functions.h>
 #include <gLCD_u8glib.h>
@@ -45,7 +46,7 @@ Menu.menu_struct.numOfMenuListItems=4;
     Serial.println("Succesfully uploaded Menu 1");  
 Serial.println("uploading Menu 2");
 
-  Menu.menu_struct.numOfMenuListItems=4;
+  Menu.menu_struct.numOfMenuListItems=5;
   string_to_array(Menu.menu_struct.heading,"SETTINGS");
   string_to_array(Menu.menu_struct.List[0],"1.  Access");
   string_to_array(Menu.menu_struct.List[1],"2.  Information");
@@ -61,7 +62,7 @@ Serial.println("uploading Menu 2");
   Menu.menu_struct.functionPointerIndex[1]=255;                               
   Menu.menu_struct.functionPointerIndex[2]=8;  
   Menu.menu_struct.functionPointerIndex[3]=9; 
-  Menu.menu_struct.functionPointerIndex[3]=23;  
+  Menu.menu_struct.functionPointerIndex[4]=23;  
   if(setMenu(2)==1)
     Serial.println("Succesfully uploaded Menu 2");  
 Serial.println("uploading Menu 3");
