@@ -124,7 +124,7 @@ void loop()
               }    
            else if(id==2)
               {
-               // Serial.println("Finger Detected, No Match Found");
+                Serial.println("Finger Detected, No Match Found");
 
                 response[4]=0;
                 response[5]=0;
@@ -179,9 +179,9 @@ void receiveEvent(int howMany)
 
 void requestEvent()
 {
-  Serial.println("Received Request");
+  //Serial.println("Received Request");
   Wire.write(response,16);
-  Serial.println("Response sent");
+  //Serial.println("Response sent");
   //Serial.write(response,16);
   if(RFIDdetected)
   {
