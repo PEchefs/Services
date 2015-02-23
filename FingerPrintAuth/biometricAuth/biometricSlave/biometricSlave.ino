@@ -1,6 +1,6 @@
 #include <FingerPrint.h>
 #include <Wire.h>
-#include "Keypad.h"
+#include <Keypad.h>
 #include <Adafruit_Fingerprint.h>
 #include <SoftwareSerial.h>
 #include <Arduino.h>
@@ -13,16 +13,15 @@
 
 
 byte input;
-const byte rows = 4; //four rows
+
+
+const byte rows = 1; //four rows
 const byte cols = 4; //three columns
 char keys[rows][cols] = {
-  {'1','2','3','E'},
-  {'4','5','6','M'},
-  {'7','8','9','U'},
-  {'P','0','O','D'}
-};
-byte rowPins[rows] = {A0, A1, A2, A3}; //connect to the row pinouts of the keypad
-byte colPins[cols] = {A4, A5, A6, A7}; //connect to the column pinouts of the keypad
+  {'Q','U','D','E'}
+};  // Q - QUIT/ESC, U - SCROLL UP, D - SCROLL DOWN, E - ENTER
+byte rowPins[rows] = {6}; //connect to the row pinouts of the keypad
+byte colPins[cols] = {7, 8, 9, 10}; //connect to the column pinouts of the keypad
 Keypad keypad1 = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
 
 byte dataToSend[10]={0,0,0,0,0,0,0,0,0,0};
@@ -30,6 +29,8 @@ unsigned long pollTimeCheck=0;
 byte RFID[12];
 boolean RFIDdetected=false;
 
+char keypressed='F';
+  
 unsigned int g_StartByte_u16 = 0x7771; //Start Pattern
 unsigned int g_EndByte_u16 = 0x7177; //End Pattern
 
@@ -142,6 +143,21 @@ void loop()
            //flag=0;
           
            //break;
+    case 7://Check Key press
+           keypressed=keypress();
+            if(keypressed!='F')
+            {
+//             0x40 0x49 - Key pressed              
+               response[3]=0x49;
+               response[4]=keypressed;
+            }
+            else
+            {
+//             0x40 0x4A - No key pressed
+               response[3]=0x4A;
+            }
+            flag=0;
+            break;
     default:break;
   }
 //  flag=0;
@@ -170,7 +186,10 @@ void receiveEvent(int howMany)
                     break;
       case 0x3530:  flag=5;
                     break;
-      case 0x3830:  flag=6;break;
+      case 0x3830:  flag=6;
+                    break;
+      case 0x3932:  flag=7;
+                    break;
       default:break;
     }
       req_flag=1;
@@ -212,4 +231,16 @@ void serialEvent()
     RFIDdetected=true;
   }    
 }
+
+char keypress()
+{
+  char key = keypad1.getKey();
+
+  if (key != NO_KEY)
+      return(key);    
+  else
+    return('F'); //Failure
+   
+}
+
 

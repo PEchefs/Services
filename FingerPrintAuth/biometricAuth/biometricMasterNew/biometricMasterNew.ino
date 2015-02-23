@@ -27,9 +27,10 @@ extern unsigned int serialInputNumber;
 
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
-byte x= 0;
+byte x= 0;  
 boolean timeUpdateRequired=false,homeScreenUpdate=false;
-unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0,homeScreenTimeCheck=0;
+unsigned long timeUpdateCheck1=0,timeUpdateCheck2=0,homeScreenTimeCheck=0,menuTimeOut=0;
+  
   
 tmElements_t currentTime;
 boolean RTCreadError=false;
@@ -39,6 +40,19 @@ boolean RTCreadError=false;
 unsigned short isKeyPressed()
 {
 //  Non zero - true
+  char pressedKey=checkKeyPress();
+  if(pressedKey!='F')
+  {
+    //Serial.print("key pressed: ");Serial.println(pressedKey);
+    keyPressDetected=true;
+    switch(pressedKey)
+    {
+      case 'Q':keypressed=ESC;break;
+      case 'U':keypressed=SCROLLUP;break;
+      case 'D':keypressed=SCROLLDOWN;break;
+      case 'E':keypressed=ENTER;break;
+    }
+  }
   if(keyPressDetected == true)
   {
     keyPressDetected=false;
@@ -106,42 +120,52 @@ void loop()
                     if(millis()-homeScreenTimeCheck>1000)
                       {
                           //if(DEBUG)
-                            Serial.println("Current State: HOMESCREEN");
+             //               Serial.println("Current State: HOMESCREEN");
                           displayHomeScreen(currentTime);
                           homeScreenTimeCheck=millis();
                       }
 
 
                      poll();
-                    
-                      if(isKeyPressed())
+        //              Serial.println("HOME SCREEN: Checking for key press");                    
+                     if(isKeyPressed())
                       {
+                        Serial.println("HOME SCREEN: Key press detected");
                         updateState(MENUSCREEN);
-                      } 
+                      }
                     break;
     
-    case MENUSCREEN:if(isKeyPressed())
-                    {
-                      switch (keypressed)
-                      {
-                        case SCROLLUP:  scrollup();
-                                        break;
-                        case SCROLLDOWN:scrolldown();
-                                        break;
-                        case ENTER:     //getMenu(currentMenu);
-                                        enterMenuItem(Menu.menu_struct);
-                                        break;
-                        case ESC:       escMenuList();
-                                        break;
-                      }
-                      if(DEBUG)
-                        Serial.println("Calling Display Menu Function");
+    case MENUSCREEN:////if(menuTimeOut-millis()>10000)
+                      ////updateState(HOMESCREEN);
+                    ////else  
+                  ////  {
+                   //   Serial.println("MENU SCREEN: Checking for key press");
+                  if(isKeyPressed())
+                  {
+                     //   Serial.println("MENU SCREEN: Key press detected");
+              ////          menuTimeOut=millis();
+                        switch (keypressed)
+                        {
+                          case SCROLLUP:  scrollup();
+                                          break;
+                          case SCROLLDOWN:scrolldown();
+                                          break;
+                          case ENTER:     //getMenu(currentMenu);
+                                          enterMenuItem(Menu.menu_struct);
+                                          break;
+                          case ESC:       escMenuList();
+                                          break;
+                        }
+//                        if(DEBUG)
+//                          Serial.println("Calling Display Menu Function");
+//                      
+                      
+                       // displayMenu();
+    ////                  }
                     
-                    
-                     // displayMenu();
-                    }
                      getMenu(currentMenu);
                      displayMenu(Menu.menu_struct);
+                   }
                     break;
 
     case FPAUTH:break;
