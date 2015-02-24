@@ -43,7 +43,7 @@ unsigned short isKeyPressed()
   char pressedKey=checkKeyPress();
   if(pressedKey!='F')
   {
-    //Serial.print("key pressed: ");Serial.println(pressedKey);
+ //   Serial.print("key pressed: ");Serial.println(pressedKey);
     keyPressDetected=true;
     switch(pressedKey)
     {
@@ -131,19 +131,21 @@ void loop()
                      if(isKeyPressed())
                       {
                         Serial.println("HOME SCREEN: Key press detected");
+                        menuTimeOut=millis();
                         updateState(MENUSCREEN);
+                        getMenu(currentMenu);
                       }
                     break;
     
-    case MENUSCREEN:////if(menuTimeOut-millis()>10000)
-                      ////updateState(HOMESCREEN);
-                    ////else  
-                  ////  {
+    case MENUSCREEN:if(millis()-menuTimeOut>30000)
+                      updateState(HOMESCREEN);
+                    else  
+                    {
                    //   Serial.println("MENU SCREEN: Checking for key press");
                   if(isKeyPressed())
                   {
                      //   Serial.println("MENU SCREEN: Key press detected");
-              ////          menuTimeOut=millis();
+                        menuTimeOut=millis();
                         switch (keypressed)
                         {
                           case SCROLLUP:  scrollup();
@@ -161,9 +163,8 @@ void loop()
 //                      
                       
                        // displayMenu();
-    ////                  }
-                    
-                     getMenu(currentMenu);
+                        getMenu(currentMenu);
+                      }
                      displayMenu(Menu.menu_struct);
                    }
                     break;
@@ -261,7 +262,7 @@ void loop()
         timeUpdateRequired=true;
         updateTime();
       }
-    wifi_Poll();
+    //wifi_Poll();
       
 
 }

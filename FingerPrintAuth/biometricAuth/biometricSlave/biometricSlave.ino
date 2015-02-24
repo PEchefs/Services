@@ -54,7 +54,7 @@ void setup()
   
   Wire.onRequest(requestEvent); // register event
   Wire.onReceive(receiveEvent); // register event
-  Serial.begin(9600);   // start serial for output
+  Serial.begin(115200);   // start serial for output
   fingerprint_init();
   Serial.println(fingerprint_check(),DEC);
 }
@@ -73,7 +73,12 @@ void loop()
   {  
     poll();
     pollTimeCheck=millis();
-    Serial.println("I'm back");
+   // Serial.println("I'm back");
+  }
+  //Check for keypress
+  if(keypressed=='F')    //Checking for keypress before previous keypressed is sent to Master will result in loss of the previous keypressed.
+  {
+    keypressed=keypress();
   }
   //Serial.println("Waiting for Omar");  
   switch(flag)
@@ -144,12 +149,15 @@ void loop()
           
            //break;
     case 7://Check Key press
-           keypressed=keypress();
+           //keypressed=keypress();
             if(keypressed!='F')
             {
 //             0x40 0x49 - Key pressed              
                response[3]=0x49;
                response[4]=keypressed;
+               Serial.print("Key pressed:");
+               Serial.println(keypressed);
+               keypressed='F';
             }
             else
             {
@@ -200,7 +208,7 @@ void requestEvent()
 {
   //Serial.println("Received Request");
   Wire.write(response,16);
-  //Serial.println("Response sent");
+ // Serial.println("Response sent");
   //Serial.write(response,16);
   if(RFIDdetected)
   {
