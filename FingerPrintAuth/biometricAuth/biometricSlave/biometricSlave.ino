@@ -14,7 +14,8 @@
 
 byte input;
 
-
+unsigned short relays[4]={A0,A1,A2,A3};
+unsigned short buzzer=2; //Dummy pin number TODO: Check actual value
 const byte rows = 1; //four rows
 const byte cols = 4; //three columns
 char keys[rows][cols] = {
@@ -57,6 +58,8 @@ void setup()
   Serial.begin(115200);   // start serial for output
   fingerprint_init();
   Serial.println(fingerprint_check(),DEC);
+  for (unsigned short i=0;i<4;i++)
+    pinMode(relays[i],OUTPUT);
 }
 
 void poll()
@@ -166,6 +169,15 @@ void loop()
             }
             flag=0;
             break;
+     case 8:// Open Door
+            openDoor(g_ReceivedByte_un.g_RecByte_split.data[0]);
+            break;
+     case 9:// Open Door
+            closeDoor(g_ReceivedByte_un.g_RecByte_split.data[0]);
+            break;
+     case 10://Sound Buzzer
+             soundBuzzer(200); //For 200 ms     
+                        
     default:break;
   }
 //  flag=0;
@@ -198,6 +210,13 @@ void receiveEvent(int howMany)
                     break;
       case 0x3932:  flag=7;
                     break;
+      case 0x3532:  flag=8;
+                    break;
+      case 0x3632:  flag=9;
+                    break;
+      case 0x3732:  flag=10;
+                    break;                    
+                                        
       default:break;
     }
       req_flag=1;
@@ -252,3 +271,19 @@ char keypress()
 }
 
 
+void openDoor(unsigned short doorIndex)
+{
+  digitalWrite(relays[doorIndex],HIGH);
+}
+
+void closeDoor(unsigned short doorIndex)
+{
+  digitalWrite(relays[doorIndex],LOW);
+}
+
+void soundBuzzer(unsigned int timeDelay)
+{
+ digitalWrite(buzzer,HIGH);
+ delay(timeDelay);
+ digitalWrite(buzzer,LOW);
+}

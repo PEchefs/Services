@@ -25,6 +25,7 @@ extern menu_un Menu;
 extern unsigned short MenuFunctionToCallIndex;
 extern unsigned int serialInputNumber;
 
+
 key keypressed=NOKEY;
 boolean keyPressDetected = false;
 byte x= 0;  
@@ -313,6 +314,7 @@ void serialEvent() {
      }
      
 }
+
 
 
 
