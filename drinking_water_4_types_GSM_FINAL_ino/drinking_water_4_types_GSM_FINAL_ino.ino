@@ -1,4 +1,4 @@
-/*
+ /*
 Tank circulation in - in1[]
 Tank out - in[]
 
@@ -13,11 +13,18 @@ Type3 in[3],in1[3]
 #include <shiftReg16.h>
 
 //Table that specifies the characteristics of the pump
+/*
 //       floor no.: 0     1     2     3     4     5     6     7      8      9 
 int table[4][10]={{100,  200,  300,  400,  500,  600,  700,  800,   900,   1000},  //10 liters
                   {200,  300,  400,  500,  600,  700,  800,  900,   1000,  1100},  //20 liters
                   {300,  400,  500,  600,  700,  800,  900,  1000,  1100,  1200},  //30 liters
                   {400,  500,  600,  700,  800,  900,  1000, 1100,  1200,  1300}}; //40 liters
+*/
+//       floor no.: 0     1     2     3     4     5     6     7      8      9                   
+int table[4][10]={{30,   40,   45,   50,   55,   60,   65,   70,   75,   80},
+                  {60,   80,   90,   100,  110,  120,  130,  140,  150,  160},    
+                  {160,  190,  220,  250,  270,  300,  325,  350,  380,  400},
+                  {300,  370,  430,  500,  550,  600,  650,  700,  750,  800}};                  
 const int IR_recv = 10;  //IR input pin
 //const int pump = 12;    //pump relay
 //const int circ = 11;    //circulation valve relay
@@ -440,7 +447,8 @@ void func_other(int ht, int type, int quant)
     delay(200);
     valveControl(in1[0],HIGH);
     delay(200);
-
+    valveControl(in1[type],LOW);
+    delay(200);
     
     total_quantity=total_quantity+quant;    
     
@@ -690,12 +698,13 @@ void func_power_on()    //function for powering ON the system and to go to idle 
   power=1;
   valveControl(outlet,LOW);    //close the outlet valve
   delay(200);
-  valveControl(circ,HIGH);    //open the circulation valve
-  delay(200);
   valveControl(in[0],HIGH);    //open the water0 valve for circulation
   delay(200);
   valveControl(in1[0],HIGH);
+  delay(6000);
+  valveControl(circ,HIGH);    //open the circulation valve
   delay(3000);
+
   valveControl(pump,HIGH);    //switch ON the pump relay
   analogWrite(led_pump,255);   //led_pump- ON
                             //other notification LEDs- OFF
