@@ -90,20 +90,20 @@ void loop()
                       response[3]=0x40;
                     else
                       response[3]=0x41;  flag=0;break;
-    case 2:if(getFingerprintEnroll1())
+    case 2:if(getFingerprintEnroll1()==1)
                        response[3]=0x40;
                     else
                       response[3]=0x41;  flag=0;break;
-    case 3:if(getFingerprintEnroll2())
+    case 3:if(getFingerprintEnroll2()==FINGERPRINT_OK)
                       response[3]=0x40;
                     else
                       response[3]=0x41;  flag=0;break;
     case 4://Serial.println(g_ReceivedByte_un.g_RecByte_split.data[i]);
-           if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
+           if(storeFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0])==FINGERPRINT_OK)
                       response[3]=0x40;
                     else
                       response[3]=0x43;  flag=0;break;
-    case 5:if(deleteFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0]))
+    case 5:if(deleteFingerprint(g_ReceivedByte_un.g_RecByte_split.data[0])==FINGERPRINT_OK)
                       response[3]=0x40;
                     else
                       response[3]=0x43;  flag=0;break;

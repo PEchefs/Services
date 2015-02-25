@@ -243,6 +243,7 @@ void loop()
                       }
                       MenuFunctionToCallIndex=-1;
                       updateState(MENUSCREEN);
+                      menuTimeOut=millis();
                       break;
     
     default : break;
