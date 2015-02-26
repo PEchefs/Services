@@ -155,11 +155,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
       {
         func_power_off();    //power off the system
         debounce();
-        gsm_flag=SMS("Water released",phone_no,0,total_quantity);  //send SMS about the type and quantity of water released to specific phone number
+        gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);  //send SMS about the type and quantity of water released to specific phone number
         if(gsm_flag==0)    //if SMS is not sent,
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //try again after a second
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //try again after a second
         }
         if(gsm_flag==1)   //if SMS is sent,
           func_gsm_led_blink();    //blink a LED
@@ -172,11 +172,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
       else     //any other button pressed
       {
         func_invalid_key();    //blink the invalid key
-        gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //send SMS about the type and quantity of water released to specific phone number
+        gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //send SMS about the type and quantity of water released to specific phone number
         if(gsm_flag==0)    //if SMS is not sent,
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //try again after a second
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //try again after a second
         }
         if(gsm_flag==1)    //if SMS is sent,
           func_gsm_led_blink();    //blink a LED
@@ -188,11 +188,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
     }
     else //if no button is pressed,
     {
-      gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //send the SMS
+      gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //send the SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity); //if failed, try sending SMS again
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht); //if failed, try sending SMS again
         }
         if(gsm_flag==1)    //on successful SMS,
           func_gsm_led_blink();  //blink a LED
@@ -235,11 +235,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
       {
         func_power_off();      //power off the system
         debounce();
-        gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //send SMS
+        gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //send SMS
         if(gsm_flag==0)    //if failed,
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity);  //send SMS agian
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);  //send SMS agian
         }     
         if(gsm_flag==1)    //if SMS is sent
           func_gsm_led_blink();    //blink a LED
@@ -252,11 +252,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
       else 
       {
         func_invalid_key();    //blink invalid_key LED
-        gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //srnd SMS
+        gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //srnd SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //try again if SMS fails
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //try again if SMS fails
         }
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink LED on successful SMS
@@ -269,11 +269,11 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
     }
     else    //if no button is pressed,
     {
-      gsm_flag=SMS("Water released",phone_no,0,total_quantity);    //send SMS
+      gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,0,total_quantity);
+          gsm_flag=SMS("Water released",phone_no,0,total_quantity,ht);
         }
         if(gsm_flag==1)
           func_gsm_led_blink();    //notify the successful SMS
@@ -366,11 +366,11 @@ void func_other(int ht, int type, int quant)
       if(results.value==0xA90) //if power button,
       {
         func_power_off();     //power off the system
-        gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //send SMS
+        gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity); //if SMS fails, try agian
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht); //if SMS fails, try agian
         }
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -384,11 +384,11 @@ void func_other(int ht, int type, int quant)
       else 
       {
         func_invalid_key();    //if any other button, blink a LED
-        gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //send SMS
+        gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //if SMS fails, try agian
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //if SMS fails, try agian
         }     
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -401,11 +401,11 @@ void func_other(int ht, int type, int quant)
     }
     else     //if no button is pressed,
     {
-      gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //send SMS
+      gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //if SMS fails, try agian
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //if SMS fails, try agian
         }     
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -469,11 +469,11 @@ void func_other(int ht, int type, int quant)
       if(results.value==0xA90)   //if power button,
       {
         func_power_off();      //power off the system
-        gsm_flag=SMS("Water released",phone_no,type,total_quantity);  //send SMS
+        gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);  //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //if SMS fails, try again
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //if SMS fails, try again
         }     
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -487,11 +487,11 @@ void func_other(int ht, int type, int quant)
       else 
       {
         func_invalid_key();    
-        gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //send SMS
+        gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //if SMS fails, try again
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //if SMS fails, try again
         }     
         if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -505,11 +505,11 @@ void func_other(int ht, int type, int quant)
     else    //if no button is pressed
     {
       
-      gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //send SMS
+      gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //send SMS
         if(gsm_flag==0)
         {
           delay(1000);
-          gsm_flag=SMS("Water released",phone_no,type,total_quantity);    //if SMS fails, try again
+          gsm_flag=SMS("Water released",phone_no,type,total_quantity,ht);    //if SMS fails, try again
         }    
        if(gsm_flag==1)
           func_gsm_led_blink();    //blink a LED on successful SMS
@@ -595,6 +595,39 @@ void func_invalid_key()    //function for blinking  invalid_key LED
     delay(100);
   }
   debounce();
+}
+
+void func_clientID()    //function for entering the height (floor number) (0 to 9)
+{
+  analogWrite(led_clientID,255);    //clientID notification LED- ON
+  delay(50);
+  if (irrecv.decode(&results))    //check for button press
+   {
+     irrecv.resume();      //get the latest button value
+     delay(200);
+                         //buttons 0 - 9 correspond to floors 0 - 9
+     if(results.value==0x910) height=0;      
+     else if(results.value==0x010) height=1;
+     else if(results.value==0x810) height=2;
+     else if(results.value==0x410) height=3;
+     else if(results.value==0xC10) height=4;
+     else if(results.value==0x210) height=5;
+     else if(results.value==0xA10) height=6;
+     else if(results.value==0x610) height=7;
+     else if(results.value==0xE10) height=8;
+     else if(results.value==0x110) height=9;
+     
+     else if(results.value==0xA90) //if power button
+     {
+       func_power_off();    //power off the system
+       debounce();
+       return;
+     }
+     else func_invalid_key();    //if any other invalid key
+     debounce();  
+    if(DEBUG1)
+     Serial.print("HEIGHT = ");Serial.println(height);   
+   }
 }
 
 void func_height()    //function for entering the height (floor number) (0 to 9)
@@ -770,7 +803,7 @@ int gsm_ping()    //function for pinging the GSM
   return 0;      //return 0, indicating that the GSM is not working
 }
 
-int SMS(char message[30], const char phone_number_local[],int type_local, int quantity_local)    //function for sending SMS 
+int SMS(char message[30], const char phone_number_local[],int type_local, int quantity_local, int height_local)    //function for sending SMS 
 {
   if(DEBUG)
     return 1;
@@ -802,6 +835,8 @@ int SMS(char message[30], const char phone_number_local[],int type_local, int qu
     Serial.print(type_local);   //write the type of water
     Serial.write("\nQuantity: ");
     Serial.print(quantity_local);  //write the quantity of water released 
+    Serial.write("\nFloor: ");
+    Serial.print(height_local);  //write the floor to which water released 
     delay(200);
     err=CHECK_ERROR(64);
     if(err==1) 
