@@ -55,7 +55,7 @@ void setup()
   
   Wire.onRequest(requestEvent); // register event
   Wire.onReceive(receiveEvent); // register event
-  Serial.begin(115200);   // start serial for output
+  Serial.begin(9600);   // start serial for output
   fingerprint_init();
   Serial.println(fingerprint_check(),DEC);
   for (unsigned short i=0;i<4;i++)
@@ -116,6 +116,7 @@ void loop()
                 //Fingerprint Match found
             if(RFIDdetected==true)
             {
+              Serial.println("RFID detected");
               response[3]=0x47;
               for(int i=4;i<=15;i++)
                 response[i]=RFID[i-4];
@@ -226,7 +227,6 @@ void receiveEvent(int howMany)
 void requestEvent()
 {
   //Serial.println("Received Request");
-  Wire.write(response,16);
  // Serial.println("Response sent");
   //Serial.write(response,16);
   if(RFIDdetected)
@@ -241,7 +241,7 @@ void requestEvent()
       Serial.println("RFID Response sent");
     }
   }
-   
+  Wire.write(response,16);
   req_flag=1;
 }
 
