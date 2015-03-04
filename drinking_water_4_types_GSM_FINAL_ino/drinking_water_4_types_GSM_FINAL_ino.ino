@@ -11,6 +11,7 @@ Type3 in[3],in1[3]
 
 #include <IRremote.h>      //include the header containing functions related to IR remote
 #include <shiftReg16.h>
+#include <SoftwareSerial.h>
 
 //Table that specifies the characteristics of the pump
 /*
@@ -37,9 +38,15 @@ const int pump=8;
 const int circ=9;
 const int outlet=10;
 
-int shiftRegData=0;
+SoftwareSerial mySerial(11, 12);
 
-const int led_pump = 13, led_ht = 7, led_type = 8, led_quant = 9, led_err = 5, led_gsm=6;  //different LEDs for different actions
+int shiftRegData=0;
+int clientID=-1;
+int clientIDnum[3]={0,0,0};
+unsigned short index=0;
+boolean clientIDledState=false;
+unsigned long clientIDledTimeOut=0;
+const int led_pump = 13, led_ht = 7, led_type = 8, led_quant = 9, led_err = 5, led_gsm=6, led_clientID=7;;  //different LEDs for different actions
 int height, type, quantity;
 int total_quantity=0;
 
@@ -209,7 +216,8 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
     delay(200);
     valveControl(circ,LOW);    //close circulation valve
     
-    delay(table[(quant/10)-1][ht]);    //release water0 for time specified in the table depending on the values of ht and quant
+    for(unsigned short count=0;count<100;count++)
+    delay((table[(quant/10)-1][ht])*10);    //release water0 for time specified in the table depending on the values of ht and quant
     
     valveControl(circ,HIGH);    //open circulation valve
     delay(200);
@@ -433,7 +441,8 @@ void func_other(int ht, int type, int quant)
     valveControl(in1[type],LOW);    //open specific water type valve    
     delay(200);
     
-    delay(table[(quant/10)-1][ht]);    //wait time depends on the values of quant and ht
+    for(unsigned short count=0;count<100;count++)
+    delay((table[(quant/10)-1][ht])*10);    //wait time depends on the values of quant and ht
                                    //bring the valves back to water0 circulation state 
     valveControl(circ,HIGH);
     delay(200);
@@ -597,25 +606,43 @@ void func_invalid_key()    //function for blinking  invalid_key LED
   debounce();
 }
 
+void toggleClientIDled()
+{
+ if (clientIDledState==true)
+ {
+   analogWrite(led_clientID,0); 
+   clientIDledState=false;
+ }
+ else
+ {
+   analogWrite(led_clientID,255); 
+   clientIDledState=true;
+ }
+}
 void func_clientID()    //function for entering the height (floor number) (0 to 9)
 {
-  analogWrite(led_clientID,255);    //clientID notification LED- ON
+  if(millis()-clientIDledTimeOut>500)
+  {
+    toggleClientIDled();    //clientID notification LED- ON
+    clientIDledTimeOut=millis();
+  }
   delay(50);
   if (irrecv.decode(&results))    //check for button press
    {
+     
      irrecv.resume();      //get the latest button value
      delay(200);
                          //buttons 0 - 9 correspond to floors 0 - 9
-     if(results.value==0x910) height=0;      
-     else if(results.value==0x010) height=1;
-     else if(results.value==0x810) height=2;
-     else if(results.value==0x410) height=3;
-     else if(results.value==0xC10) height=4;
-     else if(results.value==0x210) height=5;
-     else if(results.value==0xA10) height=6;
-     else if(results.value==0x610) height=7;
-     else if(results.value==0xE10) height=8;
-     else if(results.value==0x110) height=9;
+     if(results.value==0x910) clientIDnum[index]=0;      
+     else if(results.value==0x010) clientIDnum[index]=1;
+     else if(results.value==0x810) clientIDnum[index]=2;
+     else if(results.value==0x410) clientIDnum[index]=3;
+     else if(results.value==0xC10) clientIDnum[index]=4;
+     else if(results.value==0x210) clientIDnum[index]=5;
+     else if(results.value==0xA10) clientIDnum[index]=6;
+     else if(results.value==0x610) clientIDnum[index]=7;
+     else if(results.value==0xE10) clientIDnum[index]=8;
+     else if(results.value==0x110) clientIDnum[index]=9;
      
      else if(results.value==0xA90) //if power button
      {
@@ -625,13 +652,23 @@ void func_clientID()    //function for entering the height (floor number) (0 to 
      }
      else func_invalid_key();    //if any other invalid key
      debounce();  
-    if(DEBUG1)
-     Serial.print("HEIGHT = ");Serial.println(height);   
+    
+      index++;
    }
+   
+   if(index==3)
+   {
+     clientID=clientIDnum[0]*100+clientIDnum[1]*10+clientIDnum[2];
+     if(DEBUG1)
+       Serial.print("ClientID = ");Serial.println(clientID);   
+   }
+     
 }
+
 
 void func_height()    //function for entering the height (floor number) (0 to 9)
 {
+  
   analogWrite(led_ht,255);    //height notification LED- ON
   delay(50);
   if (irrecv.decode(&results))    //check for button press
@@ -780,25 +817,37 @@ int gsm_ping()    //function for pinging the GSM
 {
   if(DEBUG)
     return 1;
+  mySerial.write("GSM ping called!");
+  mySerial.println("");
   int i, ok_flag=0; 
   for(i=0;i<3;i++)    //ping 3 times if no answer from the GSM modem
   {
     char buff_ping[20]={0};  
     Serial.write(0x1B);  
     delay(200);
-    Serial.write("AT\r");    //write AT\r into GSM
+    Serial.write("AT+CPIN?\r");    //write AT\r into GSM
     delay(500);
     for(i=0;i<20;i++)  
     buff_ping[i]=Serial.read();    //rad 20 values from GSM
     for(i=0;i<19;i++)
     {
-      if(buff_ping[i]=='O'&&buff_ping[i+1]=='K')    //check for the word 'OK' in the read data
+  //    if(buff_ping[i]=='O'&&buff_ping[i+1]=='K')    //check for the word 'OK' in the read data
+      if(buff_ping[i]=='R'&&buff_ping[i+1]=='E'&&buff_ping[i+2]=='A'&&buff_ping[i+3]=='D'&&buff_ping[i+4]=='Y')    //check for the word 'OK' in the read data
       {
+        mySerial.write("GSM AT OK!");
+        mySerial.println("");
         ok_flag=1;    //if 'OK' is found,
         return 1;    //return 1, indication that the GSM is working properly
       }
     }
   }
+  
+  mySerial.write("ERROR! GSM RESPONSE NO OK RECEIVED");
+  mySerial.println("");
+  //mySerial.write("Response:");
+  //for(i=0;i<20;i++)  
+    //mySerial.write(buff_ping[i]);
+  mySerial.println("");
   if(ok_flag==0)  //if 'OK' is not sent back by GSM all 3 times,
   return 0;      //return 0, indicating that the GSM is not working
 }
@@ -831,6 +880,8 @@ int SMS(char message[30], const char phone_number_local[],int type_local, int qu
     if(err==1) 
       return 0;
     Serial.write(message);    //write the text
+    Serial.write("\nClient ID: ");
+    Serial.print(clientID);  //write the floor to which water released 
     Serial.write("\nType: ");  
     Serial.print(type_local);   //write the type of water
     Serial.write("\nQuantity: ");
@@ -879,6 +930,7 @@ void setup()    //this function is called only once during the arduino startup f
   irrecv.enableIRIn();     //enable the IR receiver
   Serial.begin(9600);      //9600 baude rate for serial communication with GSM modem 
   delay(100);
+  mySerial.begin(9600);
 //  Serial.println("Serial begun");
 }
 
@@ -902,6 +954,7 @@ void loop()     //this function is called indefinitely
       for(i=0;i<2;i++)  //ping GSM modem 2 times
     {
       gsm_flag=gsm_ping();    //call the function for pinging the GSM modem
+      
       if(DEBUG)
       {
         gsm_flag=1;
@@ -936,6 +989,15 @@ void loop()     //this function is called indefinitely
     
     if((power==1) && (ht_flag==1))    //if flag for entering the height is ON & the system is ON,
     {
+        index=0;
+        clientID=-1;
+      while(clientID==-1)    //check if the clientID is updated with the valid value
+      {
+
+        if(power==0)    //if power is OFF,
+          return;       //return from the function
+       func_clientID();  //else go to function that takes clientID from the user
+      }
       if(DEBUG1)
         Serial.println("ENTER HEIGHT");
       height=-1;          //initialize the height variable to -1
@@ -984,7 +1046,20 @@ void loop()     //this function is called indefinitely
     }
     if((power==1) && (go==1))    //check if flag for controling the relays is set and the power is ON
     {
-      gsm_flag=gsm_ping();      //ping the GSM to check if it is working
+    for(i=0;i<2;i++)  //ping GSM modem 2 times
+    {
+      gsm_flag=gsm_ping();    //call the function for pinging the GSM modem
+      
+      if(DEBUG)
+      {
+        gsm_flag=1;
+        Serial.println("DEBUG IS ON");
+      }
+      if(gsm_flag==1)        //if ping is successful,
+        break;               //come out of for loop
+      delay(500);            //else ttry again
+    }
+    //gsm_flag=gsm_ping();      //ping the GSM to check if it is working
       if(gsm_flag==1)          //if GSM is working,
       {
         switch(type)          //call the relevant functions corresponding to type 
