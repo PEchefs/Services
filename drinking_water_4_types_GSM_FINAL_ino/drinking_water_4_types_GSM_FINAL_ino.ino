@@ -51,8 +51,8 @@ int height, type, quantity;
 int total_quantity=0;
 
 #define DEBUG 0
-#define DEBUG1 0
-#define DEBUG2 1
+#define DEBUG1 1
+//#define DEBUG2 1
 
 shiftReg16 shiftReg1;
 const int ShiftRegPinSRCLR = A0;
@@ -62,7 +62,7 @@ const int ShiftRegPinRCK = A2;
 
 const float liters_per_sec[10]={5,4.5,4,3.5,3,2.5,2,1.5,1,0.5};    //liters per second value of the pump for floors 0 to 9
 
-boolean power=0, ht_flag=0, type_flag=0, quant_flag=0, go=0, gsm_flag=0,time_flag=0;  
+boolean power=0, clientID_flag=0, ht_flag=0, type_flag=0, quant_flag=0, go=0, gsm_flag=0,time_flag=0;  
 unsigned long time1, time2, time3, time4, time_diff;
 IRrecv irrecv(IR_recv);   //receive IR information from the pin IR_recv
 
@@ -106,9 +106,9 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
 {
   if(DEBUG1)
     {
-      Serial.println("Releasing water: general");
-    Serial.print("Quantity: ");Serial.println(quant);
-    Serial.print("Height: " );Serial.println(ht);
+      //mySerial.println("Releasing water: general");
+    //mySerial.print("Quantity: ");//mySerial.println(quant);
+    //mySerial.print("Height: " );//mySerial.println(ht);
     }
   int i;
   if(quant==1)      //quant=1 means unspecified amount of water
@@ -299,9 +299,9 @@ void func_other(int ht, int type, int quant)
   
   if(DEBUG1)
     {
-      Serial.print("Releasing water: ");Serial.println(type);
-    Serial.print("Quantity: ");Serial.println(quant);
-    Serial.print("Height: " );Serial.println(ht);
+      //mySerial.print("Releasing water: ");//mySerial.println(type);
+    //mySerial.print("Quantity: ");//mySerial.println(quant);
+    //mySerial.print("Height: " );//mySerial.println(ht);
     }
   int i;
   if(quant==1)    //unspecified amout of water
@@ -532,6 +532,7 @@ void func_other(int ht, int type, int quant)
 
 void func_gsm_led_blink()    //function to blink the led_gsm on successful SMS
 {
+  //mySerial.println("Blink GSM LED");
   int i;
   for(i=0;i<3;i++)    //3 pulses
   {
@@ -551,8 +552,8 @@ int func_time_to_quant(unsigned long time_delay)    //function to convert time i
 
 void func_power_off()    //function to power off the system
 {
-  if(DEBUG1)
-    Serial.println("POWERING OFF");
+ // if(DEBUG1)
+    //mySerial.println("POWERING OFF");
   int i;
   valveControl(pump,LOW);    //switch of the pump
   delay(200);
@@ -573,6 +574,7 @@ void func_power_off()    //function to power off the system
   }
         //clear the variables
   power=0;
+  clientID_flag=0;
   ht_flag=0;
   type_flag=0;
   quant_flag=0;
@@ -587,14 +589,14 @@ void func_power_off()    //function to power off the system
   delay(100);
   analogWrite(led_err,0);
   delay(100);  
-  if(DEBUG1)
-    Serial.println("TURNED OFF ALL LEDs");
+ // if(DEBUG1)
+    //mySerial.println("TURNED OFF ALL LEDs");
 }
 
 void func_invalid_key()    //function for blinking  invalid_key LED
 {
-  if(DEBUG1)
-    Serial.println("INVALID KEY");
+ // if(DEBUG1)
+    //mySerial.println("INVALID KEY");
   int i;
   for(i=0;i<5;i=i+1)    //5 pulses
   {
@@ -659,8 +661,8 @@ void func_clientID()    //function for entering the height (floor number) (0 to 
    if(index==3)
    {
      clientID=clientIDnum[0]*100+clientIDnum[1]*10+clientIDnum[2];
-     if(DEBUG1)
-       Serial.print("ClientID = ");Serial.println(clientID);   
+    // if(DEBUG1)
+//       //mySerial.println("ClientID = ");//mySerial.println(clientID);   
    }
      
 }
@@ -695,8 +697,8 @@ void func_height()    //function for entering the height (floor number) (0 to 9)
      }
      else func_invalid_key();    //if any other invalid key
      debounce();  
-    if(DEBUG1)
-     Serial.print("HEIGHT = ");Serial.println(height);   
+    //if(DEBUG1)
+     //mySerial.print("HEIGHT = ");//mySerial.println(height);   
    }
 }
 
@@ -725,8 +727,8 @@ void func_type()    //function for entering type of water (0 to 3)
      }
      else func_invalid_key();    //if any other button
      debounce();
-         if(DEBUG1)
-     Serial.print("TYPE = ");Serial.println(type);
+        // if(DEBUG1)
+     //mySerial.print("TYPE = ");//mySerial.println(type);
    }
 }
 
@@ -756,15 +758,15 @@ void func_quantity()    //function for entering quantity of water required (10 l
      }
      else func_invalid_key();    //if any other button
      debounce();
-              if(DEBUG1)
-     Serial.print("QUANTITY = ");Serial.println(quantity);
+         //     if(DEBUG1)
+     //mySerial.print("QUANTITY = ");//mySerial.println(quantity);
    }
 }
    
 void func_power_on()    //function for powering ON the system and to go to idle state
 { 
-  if(DEBUG1)  
-    Serial.println("POWERING ON");
+  //if(DEBUG1)  
+    //mySerial.println("POWERING ON");
   power=1;
   valveControl(outlet,LOW);    //close the outlet valve
   delay(200);
@@ -781,7 +783,7 @@ void func_power_on()    //function for powering ON the system and to go to idle 
   analogWrite(led_ht,0);       
   analogWrite(led_type,0);
   analogWrite(led_quant,0); 
-  ht_flag=1;
+  clientID_flag=1;
 }
 
 void debounce()    //function for clearing the miss-pressed buttons
@@ -817,43 +819,48 @@ int gsm_ping()    //function for pinging the GSM
 {
   if(DEBUG)
     return 1;
-  mySerial.write("GSM ping called!");
-  mySerial.println("");
+  //mySerial.write("GSM ping called!");
+  //mySerial.println("");
   int i, ok_flag=0; 
   for(i=0;i<3;i++)    //ping 3 times if no answer from the GSM modem
   {
-    char buff_ping[20]={0};  
+    char buff_ping[30]={0};  
     Serial.write(0x1B);  
     delay(200);
-    Serial.write("AT+CPIN?\r");    //write AT\r into GSM
+    Serial.write("AT+CREG?\r");    //write AT\r into GSM
     delay(500);
-    for(i=0;i<20;i++)  
-    buff_ping[i]=Serial.read();    //rad 20 values from GSM
-    for(i=0;i<19;i++)
+    for(i=0;i<30;i++)  
+    {
+      buff_ping[i]=Serial.read();    //rad 20 values from GSM
+      //mySerial.print(buff_ping[i]);
+    }
+    //mySerial.println("");
+    for(i=0;i<29;i++)
     {
   //    if(buff_ping[i]=='O'&&buff_ping[i+1]=='K')    //check for the word 'OK' in the read data
-      if(buff_ping[i]=='R'&&buff_ping[i+1]=='E'&&buff_ping[i+2]=='A'&&buff_ping[i+3]=='D'&&buff_ping[i+4]=='Y')    //check for the word 'OK' in the read data
+      if(buff_ping[i]=='C'&&buff_ping[i+1]=='R'&&buff_ping[i+2]=='E'&&buff_ping[i+3]=='G'&&buff_ping[i+4]==':'&&buff_ping[i+5]==' '&&buff_ping[i+6]=='0'&&buff_ping[i+7]==','&&buff_ping[i+8]=='1')    //check for the word 'OK' in the read data
       {
-        mySerial.write("GSM AT OK!");
-        mySerial.println("");
+        //mySerial.write("GSM AT OK!");
+        //mySerial.println("");
         ok_flag=1;    //if 'OK' is found,
         return 1;    //return 1, indication that the GSM is working properly
       }
     }
   }
   
-  mySerial.write("ERROR! GSM RESPONSE NO OK RECEIVED");
-  mySerial.println("");
-  //mySerial.write("Response:");
+  //mySerial.write("ERROR! GSM RESPONSE NO OK RECEIVED");
+  //mySerial.println("");
+  ////mySerial.write("Response:");
   //for(i=0;i<20;i++)  
-    //mySerial.write(buff_ping[i]);
-  mySerial.println("");
+    ////mySerial.write(buff_ping[i]);
+  //mySerial.println("");
   if(ok_flag==0)  //if 'OK' is not sent back by GSM all 3 times,
   return 0;      //return 0, indicating that the GSM is not working
 }
 
 int SMS(char message[30], const char phone_number_local[],int type_local, int quantity_local, int height_local)    //function for sending SMS 
 {
+  //mySerial.println("SMS function called");
   if(DEBUG)
     return 1;
   int i,gsm_status=0,err=0;
@@ -930,7 +937,7 @@ void setup()    //this function is called only once during the arduino startup f
   irrecv.enableIRIn();     //enable the IR receiver
   Serial.begin(9600);      //9600 baude rate for serial communication with GSM modem 
   delay(100);
-  mySerial.begin(9600);
+  //mySerial.begin(9600);
 //  Serial.println("Serial begun");
 }
 
@@ -946,8 +953,8 @@ void loop()     //this function is called indefinitely
   time2=millis();      //get the time in millisecond
   if((time2-time1)>10000)  //if the time delay is greater than 10 seconds, ping the GSM modem
   {
-    if(DEBUG1)
-      Serial.println("Checking GSM");
+    //if(DEBUG1)
+      //mySerial.println("Checking GSM");
     time_flag=0;
     if(!DEBUG)
     {
@@ -958,7 +965,7 @@ void loop()     //this function is called indefinitely
       if(DEBUG)
       {
         gsm_flag=1;
-        Serial.println("DEBUG IS ON");
+        //mySerial.println("DEBUG IS ON");
       }
       if(gsm_flag==1)        //if ping is successful,
         break;               //come out of for loop
@@ -976,8 +983,8 @@ void loop()     //this function is called indefinitely
     analogWrite(led_gsm,0);     //if GSM is working, switch OFF the GSM notification LED
     if ((irrecv.decode(&results)) && (power==0))    //check for remote button press when the system is powered OFF
     {
-      if(DEBUG1)
-        Serial.println("Checking for button press");
+      //if(DEBUG1)
+        //mySerial.println("Checking for button press");
       irrecv.resume();    //get the latedt button value
       delay(200);
       if(results.value==0xA90)    //if power button is pressed
@@ -987,19 +994,28 @@ void loop()     //this function is called indefinitely
       }
     }
     
-    if((power==1) && (ht_flag==1))    //if flag for entering the height is ON & the system is ON,
+    if((power==1) && (clientID_flag==1))    //if flag for entering the height is ON & the system is ON,
     {
+      //if(DEBUG1)
+     //   //mySerial.write("ENTER CLIENT ID");
+      
         index=0;
         clientID=-1;
       while(clientID==-1)    //check if the clientID is updated with the valid value
       {
-
+        
         if(power==0)    //if power is OFF,
           return;       //return from the function
        func_clientID();  //else go to function that takes clientID from the user
       }
-      if(DEBUG1)
-        Serial.println("ENTER HEIGHT");
+      debounce();
+      clientID_flag=0;
+      ht_flag=1;
+    }
+    if((power==1) && (ht_flag==1))    //if flag for entering the height is ON & the system is ON,
+    {
+      //if(DEBUG1)
+        //mySerial.println("ENTER HEIGHT");
       height=-1;          //initialize the height variable to -1
       while(height==-1)    //check if the height variable is updated with the valid value
       {
@@ -1014,8 +1030,8 @@ void loop()     //this function is called indefinitely
     
     if((power==1) && (type_flag==1))    //if flag for entering the type is ON & the system is ON,
     {
-      if(DEBUG1)
-        Serial.println("ENTER TYPE");
+     // if(DEBUG1)
+        //mySerial.println("ENTER TYPE");
       type=-1;          //initialize the type variable to -1
       while(type==-1)  //check if the type variable is updated with the valid value
       {
@@ -1030,8 +1046,8 @@ void loop()     //this function is called indefinitely
     
     if((power==1) && (quant_flag==1))      //if flag for entering the quantity is ON & the system is ON,
     {
-      if(DEBUG1)
-        Serial.println("ENTER QUANTITY");
+      //if(DEBUG1)
+        //mySerial.println("ENTER QUANTITY");
       quantity=-1;    //initialize the quantity variable to -1
       while(quantity==-1)    //check if the quantity variable is updated with the valid value
       {
@@ -1048,12 +1064,13 @@ void loop()     //this function is called indefinitely
     {
     for(i=0;i<2;i++)  //ping GSM modem 2 times
     {
+      //mySerial.println("Pinging GSM");
       gsm_flag=gsm_ping();    //call the function for pinging the GSM modem
       
       if(DEBUG)
       {
         gsm_flag=1;
-        Serial.println("DEBUG IS ON");
+        //mySerial.println("DEBUG IS ON");
       }
       if(gsm_flag==1)        //if ping is successful,
         break;               //come out of for loop
@@ -1074,13 +1091,15 @@ void loop()     //this function is called indefinitely
       }
       else       //if GSM is not working, 
       {
+        //mySerial.println("GSM Not Working! Aborting and Powering OFF");
         func_power_off();    //power OFF the system 
+        //mySerial.println("Turning ON GSM Error LED");
         analogWrite(led_gsm,255);    //notify the user about the GSM error by switching ON a LED
         return;    
       }
       
     }
-    if((power==1) && (ht_flag==0) && (type_flag==0) && (quant_flag==0))    //if all the flags are cleared and power is ON,
+    if((power==1) && (clientID_flag==0) && (ht_flag==0) && (type_flag==0) && (quant_flag==0))    //if all the flags are cleared and power is ON,
     {
       if(irrecv.decode(&results))          //check for button press
       {
@@ -1088,6 +1107,7 @@ void loop()     //this function is called indefinitely
         delay(200);      
         if(results.value==0xA90)     //if power button,
         {
+          //mySerial.println("POWER OFF BUTTON PRESSED! POWERING OFF!");
           func_power_off();          //power OFF the system
           debounce();
           return;
@@ -1095,6 +1115,7 @@ void loop()     //this function is called indefinitely
       }
       else      //is no button is pressed,
       {
+        //mySerial.println("Going To Idle State");
         func_power_on();    //go to idle state
         debounce();
       } 
@@ -1102,7 +1123,9 @@ void loop()     //this function is called indefinitely
   }
  else      //if GSM if not working,
   {
+    //mySerial.println("GSM NOT WORKING! POWERING OFF!");
     func_power_off();    //power OFF the system
+    //mySerial.println("Turning ON GSM Error LED");
     analogWrite(led_gsm,255);    //notify the user about the GSM error by switching ON a LED
     delay(200);
   }
