@@ -118,6 +118,8 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
     delay(200);
     valveControl(circ,LOW);    //close circulation valve
     delay(200);
+    valveControl(in1[0],LOW);    //close circulation valve
+    delay(200);
     while(1)    
     {
       if(irrecv.decode(&results))    //check if any button is pressed 
@@ -136,7 +138,8 @@ void func_water0(int ht, int quant)    //function for releasing general water (w
       }
       else delay(200);
     }
-    
+    valveControl(in1[0],LOW);    //close circulation valve
+    delay(200);
     valveControl(circ,HIGH);    //open the circulation valve
     delay(200);
     valveControl(outlet,LOW);    //close the outlet valve
